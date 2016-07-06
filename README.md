@@ -34,3 +34,6 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
     end
     ```
 
+## About
+
+Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Erlang.
