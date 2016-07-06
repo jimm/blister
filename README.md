@@ -36,4 +36,4 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 ## About
 
-Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Erlang.
+Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
