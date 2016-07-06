@@ -191,36 +191,33 @@ defmodule Blister.Cursor do
     1
   """
   def damerau_levenshtein(seq1, seq2) do
-    oneago = nil
-    thisrow =
-      ((1..length(seq2)) |> Enum.into([])) ++ [0]
-    (0..length(seq1)-1)
-    |> Enum.map(fn x ->
-      twoago = oneago
-      oneago = thisrow
-      thisrow =
-        [x+1 | List.duplicate(0, length(seq2))]
-        |> Enum.reverse
+    thisrow = ((1..length(seq2)) |> Enum.into([])) ++ [0]
+    {_, row} =
+      (0..length(seq1)-1)
+      |> Enum.reduce({nil, thisrow}, fn(x, {twoago, oneago}) ->
+           thisrow = [x+1 | List.duplicate(0, length(seq2))] |> Enum.reverse
 
-      (0..length(seq2)-1)
-      |> Enum.map(fn y ->
-        delcost = Enum.at(oneago, y) + 1
-        addcost = Enum.at(thisrow, y - 1) + 1
-        offset = if Enum.at(seq1, x) != Enum.at(seq2, y), do: 1, else: 0
-        subcost = Enum.at(oneago, y - 1) + offset
-        thisrow = List.replace_at(thisrow, y, Enum.min([delcost, addcost, subcost]))
-        thisrow = if x > 0 && y > 0 &&
-          Enum.at(seq1, x) == Enum.at(seq2, y-1) &&
-          Enum.at(seq1, x-1) == Enum.at(seq2, y) &&
-          Enum.at(seq1, x) != Enum.at(seq2, y)
-        do
-          List.replace_at(thisrow, y, Enum.min([Enum.at(thisrow, y), Enum.at(twoago, y-2) + 1]))
-        else
-          thisrow
-        end
+           thisrow =
+             (0..length(seq2)-1)
+             |> Enum.reduce(thisrow, fn(y, trow) ->
+                  delcost = Enum.at(oneago, y) + 1
+                  addcost = Enum.at(trow, y - 1) + 1
+                  offset = if Enum.at(seq1, x) != Enum.at(seq2, y), do: 1, else: 0
+                  subcost = Enum.at(oneago, y - 1) + offset
+                  trow = List.replace_at(trow, y, Enum.min([delcost, addcost, subcost]))
+                  if x > 0 && y > 0 &&
+                    Enum.at(seq1, x) == Enum.at(seq2, y-1) &&
+                    Enum.at(seq1, x-1) == Enum.at(seq2, y) &&
+                    Enum.at(seq1, x) != Enum.at(seq2, y)
+                    do
+                    List.replace_at(trow, y, Enum.min([Enum.at(trow, y), Enum.at(twoago, y-2) + 1]))
+                    else
+                      trow
+                  end
+           end)
+          {oneago, thisrow}
       end)
-    end)
-    Enum.at(thisrow, length(seq2) - 1)
+    Enum.at(row, length(seq2) - 1)
   end
 
   defp first_of(nil), do: nil
