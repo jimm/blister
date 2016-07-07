@@ -11,6 +11,8 @@ defmodule Blister.Pack do
   what file was loaded, what GUI to use, etc.
   """
 
+  alias Blister.{Cursor, SongList}
+
   def start_link do
     Agent.start_link(
       fn ->
@@ -21,6 +23,7 @@ defmodule Blister.Pack do
       name: __MODULE__)
   end
 
+  def cursor,           do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
   def inputs,           do: Agent.get(__MODULE__, fn pack -> pack.inputs end)
   def outputs,          do: Agent.get(__MODULE__, fn pack -> pack.outputs end)
   def all_songs,        do: Agent.get(__MODULE__, fn pack -> pack.all_songs end)
@@ -31,6 +34,34 @@ defmodule Blister.Pack do
   def use_midi?,        do: Agent.get(__MODULE__, fn pack -> pack.use_midi end)
   def gui,              do: Agent.get(__MODULE__, fn pack -> pack.gui end)
   def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
+
+  def next_patch do
+    Agent.update(__MODULE__, fn pack ->
+      %{pack | cursor: cursor |> Cursor.next_patch}
+    end)
+  end
+  def prev_patch do
+    Agent.update(__MODULE__, fn pack ->
+      %{pack | cursor: cursor |> Cursor.prev_patch}
+    end)
+  end
+  def next_song do
+    Agent.update(__MODULE__, fn pack ->
+      %{pack | cursor: cursor |> Cursor.next_song}
+    end)
+  end
+  def prev_song do
+    Agent.update(__MODULE__, fn pack ->
+      %{pack | cursor: cursor |> Cursor.prev_song}
+    end)
+  end
+
+  def add_song(song) do
+    list = all_songs
+      |> SongList.add_song(song)
+      |> SongList.sort_by_name
+    Agent.update(__MODULE__, fn pack -> %{pack | all_songs: list} end)
+  end
 
   def load(_file) do
   end

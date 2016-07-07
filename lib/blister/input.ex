@@ -7,7 +7,7 @@ defmodule Blister.Input do
 
   # ================ public API ================
 
-  def start(name, connections, ticks_per_second) do
+  def start(name, connections) do
     {:ok, input} = PortMidi.open(:input, name)
     listener = spawn_link(Blister.Input, :loop, [{nil, nil}])
     state = %State{name: name,

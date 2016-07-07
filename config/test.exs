@@ -1,4 +1,4 @@
 use Mix.Config
-config :logger, :jex_logger,
-  path: "/tmp/jex_test.log",
+config :logger, :blister_logger,
+  path: "/tmp/blister_test.log",
   level: :warn

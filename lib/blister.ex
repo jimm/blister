@@ -1,19 +1,32 @@
 defmodule Blister do
   use Application
+  require Logger
 
-  # See http://elixir-lang.org/docs/stable/elixir/Application.html
-  # for more information on OTP Applications
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
+    argv = System.argv
+    if length(argv) > 0 && hd(argv) == "list" do
+      list_devices
+      {:ok, self}
+    else
+      run
+    end
+  end
 
-    # Define workers and child supervisors to be supervised
-    children = [
-      worker(Blister.Pack, [])
-    ]
+  defp list_devices do
+    %{input: inputs, output: outputs} = PortMidi.devices
+    f = fn d -> IO.puts "  #{d.name}" end
+    IO.puts "Inputs:"
+    inputs |> Enum.map(f)
+    IO.puts "Outputs:"
+    outputs |> Enum.map(f)
+  end
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Blister.Supervisor]
-    Supervisor.start_link(children, opts)
+  defp run do
+    Logger.info("starting supervisor")
+    result = Blister.Supervisor.start_link()
+    receive do
+      :quit -> :ok              # never received, but keeps app running
+    end
+    result
   end
 end

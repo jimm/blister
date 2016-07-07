@@ -1,0 +1,76 @@
+-module(cecho_consts).
+-compile(export_all).
+
+ceTRUE() -> 1.
+ceFALSE() -> 0.
+
+ceCURS_INVISIBLE() -> 0.
+ceCURS_NORMAL() -> 1.
+ceCURS_VERY_VISIBLE() -> 2.
+
+ceCOLOR_BLACK() -> 0.
+ceCOLOR_RED() -> 1.
+ceCOLOR_GREEN() -> 2.
+ceCOLOR_YELLOW() -> 3.
+ceCOLOR_BLUE() -> 4.
+ceCOLOR_MAGENTA() -> 5.
+ceCOLOR_CYAN() -> 6.
+ceCOLOR_WHITE() -> 7.
+
+ceA_NORMAL() -> 0.
+ceCOLOR_PAIR(C) -> (C bsl 8).
+ceA_BOLD() -> (1 bsl (8 + 13)).
+ceA_UNDERLINE() -> (1 bsl (8 + 9)).
+ceA_REVERSE() -> (1 bsl (8 + 10)).
+ceA_BLINK() -> (1 bsl (8 + 11)).
+
+ceSTDSCR() -> 0.
+
+ceACS_DIAMOND() -> 4194400.
+ceACS_CKBOARD() -> 4194401.
+ceACS_DEGREE() -> 4194406.
+ceACS_PLMINUS() -> 4194407.
+ceACS_BOARD() -> 4194408.
+ceACS_LANTERN() -> 4194409.
+ceACS_LRCORNER() -> 4194410.
+ceACS_URCORNER() -> 4194411.
+ceACS_ULCORNER() -> 4194412.
+ceACS_LLCORNER() -> 4194413.
+ceACS_PLUS() -> 4194414.
+ceACS_S1() -> 4194415.
+ceACS_S3() -> 4194416.
+ceACS_HLINE() -> 4194417.
+ceACS_S7() -> 4194418.
+ceACS_S9() -> 4194419.
+ceACS_LTEE() -> 4194420.
+ceACS_RTEE() -> 4194421.
+ceACS_BTEE() -> 4194422.
+ceACS_TTEE() -> 4194423.
+ceACS_VLINE() -> 4194424.
+ceACS_LEQUAL() -> 4194425.
+ceACS_GEQUAL() -> 4194426.
+ceACS_PI() -> 4194427.
+ceACS_NEQUAL() -> 4194428.
+ceACS_STERLING() -> 4194429.
+ceACS_BULLET() -> 4194430.
+ceACS_RARROW() -> 4194347.
+ceACS_LARROW() -> 4194348.
+ceACS_UARROW() -> 4194349.
+ceACS_DARROW() -> 4194350.
+ceACS_BLOCK() -> 4194352.
+
+ceKEY_TAB() -> 9.
+ceKEY_ESC() -> 27.
+
+
+ceKEY_DOWN() -> 258.
+ceKEY_UP() -> 259.
+ceKEY_LEFT() -> 260.
+ceKEY_RIGHT() -> 261.
+ceKEY_HOME() -> 262.
+ceKEY_F(N) -> 264+N.
+ceKEY_DEL() -> 330.
+ceKEY_INS() -> 331.
+ceKEY_PGDOWN() -> 338.
+ceKEY_PGUP() -> 339.
+ceKEY_END() -> 360.

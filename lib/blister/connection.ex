@@ -77,7 +77,7 @@ defmodule Blister.Connection do
   # Returns true if the zone is nil (allowing all notes through) or if
   # zone is a Range and `note` is inside the zone.
   def inside_zone?(conn, note) do
-    conn.zone == nil || Range.member?(conn.zone, note)
+    conn.zone == nil || Enum.member?(conn.zone, note)
   end
 
   # Convert a single message into whatever we want to send. Return nil if

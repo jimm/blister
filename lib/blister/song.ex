@@ -5,7 +5,7 @@ defmodule Blister.Song do
 
   def create(name) do
     song = %__MODULE__{name: name}
-    Blister.add_song(song)
+    Blister.Pack.add_song(song)
     song
   end
 end
