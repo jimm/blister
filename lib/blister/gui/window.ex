@@ -1,12 +1,16 @@
-defmodule Bundle.GUI.Window do
+defmodule Blister.GUI.Window do
 
-  defstruct [:win, :title_prefix, :title, :max_contents_len, :visible_height]
+  defstruct [:win, :r, :title_prefix, :title, :max_contents_len, :visible_height]
+
+  require Logger
 
   @doc """
   Return a new Window struct.
   """
-  def create({height, width, row, col}, title_prefix, title \\ nil) do
-    %__MODULE__{win: :cecho.newwin(rows, cols, row, col),
+  def create({height, width, row, col} = r, title_prefix, title \\ nil) do
+    w = :cecho.newwin(height, width, row, col)
+    %__MODULE__{win: w,
+                r: r,
                 title_prefix: title_prefix, title: title,
                 max_contents_len: width - 3, # 2 for borders
                 visible_height: height - 2}  # ditto
@@ -15,7 +19,7 @@ defmodule Bundle.GUI.Window do
   @doc """
   Moves and resizes a Window. Not yet implemented.
   """
-  def move_and_resize(win, {height, width, row, col}) do
+  def move_and_resize(win, {_height, _width, _row, _col}) do
     # TODO
     win
   end
@@ -30,7 +34,8 @@ defmodule Bundle.GUI.Window do
   @doc """
   Draw border and title.
   """
-  def draw(%__MODULE__{win: win, title_prefix: title_prefix, title: title}) do
+  def draw(%__MODULE__{win: win, title_prefix: title_prefix, title: title} = window) do
+    Logger.debug("Window.draw title #{title}")
     :cecho.werase(win)
     :cecho.box(:cecho_consts.ceSTDSCR, :cecho_consts.ceACS_VLINE,
       :cecho_consts.ceACS_HLINE)
@@ -39,9 +44,11 @@ defmodule Bundle.GUI.Window do
     :cecho.attron(win, :cecho_consts.ceA_REVERSE)
     :cecho.waddch(win, ?\s)
     if title_prefix, do: :cecho.waddstr(win, "#{title_prefix}: ")
-    if title, do: :cecho.addstr(win, title)
+    if title, do: :cecho.waddstr(win, title)
     :cecho.waddch(win, ?\s)
     :cecho.attroff(win, :cecho_consts.ceA_REVERSE)
+
+    window
   end
 
   @doc """

@@ -37,3 +37,13 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 ## About
 
 Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
+
+# To Do
+
+- Add to cecho
+  - wnoutrefresh
+  - doupdate
+  - window movement
+  - wresize?
+- Use window movement in window.ex when resized
+- Resize (supported by cecho? if not, add)

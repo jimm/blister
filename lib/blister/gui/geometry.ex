@@ -24,12 +24,12 @@ defmodule Blister.GUI.Geometry do
 
   def patch_rect do
     g = geometry
-    {g.bot_height, max_col, g.top_height, 0}
+    {g.bot_height, g.max_col, g.top_height, 0}
   end
 
   def message_rect do
     g = geometry
-    {1, max_col, max_row-1, 0}
+    {1, g.max_col, g.max_row-1, 0}
   end
 
   def info_rect do
@@ -39,17 +39,17 @@ defmodule Blister.GUI.Geometry do
 
   def help_rect do
     g = geometry
-    {max_row - 6, max_col - 6, 3, 3}
+    {g.max_row - 6, g.max_col - 6, 3, 3}
   end
 
   defp geometry do
-    {max_row, max_col} = :cecho.getmaxyx(win)
+    {max_row, max_col} = :cecho.getmaxyx
 
-    top_height = (max_row - 1) * 2 / 3
+    top_height = trunc((max_row - 1) * 2 / 3)
     bot_height = (max_row - 1) - top_height
-    top_width = max_col / 3
+    top_width = trunc(max_col / 3)
 
-    sls_height = top_height / 3
+    sls_height = trunc(top_height / 3)
     sl_height = top_height - sls_height
 
     info_width = max_col - (top_width * 2)

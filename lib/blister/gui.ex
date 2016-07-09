@@ -4,19 +4,16 @@ defmodule Blister.GUI do
 
   use GenServer
   require Logger
-  alias Blister.GUI.{Window, Geometry}
+  alias Blister.Pack
+  alias Blister.GUI.{Window, ListWindow, PatchWindow, TriggerWindow, InfoWindow}
+  alias Blister.GUI.Geometry, as: G
 
   # ================ Server ================
 
   def start_link do
-    :application.start(:cecho)
-    :cecho.cbreak
-    :cecho.noecho
-    :cecho.keypad(:cecho_consts.ceSTDSCR, true)
-    :cecho.curs_set(:cecho_consts.ceCURS_INVISIBLE)
-    draw_frame
-    :cecho.refresh
-    GenServer.start_link(__MODULE__, [])
+    config_curses
+    windows = create_windows
+    GenServer.start_link(__MODULE__, windows)
   end
 
   def init(state) do
@@ -27,28 +24,37 @@ defmodule Blister.GUI do
 
   # ================ API ================
 
-  def refresh, do: :cecho.refresh
+  def refresh do
+    Logger.debug("GUI.refresh calling genserver :refresh_all")
+    GenServer.call(__MODULE__, :refresh_all)
+  end
 
-  def status(msg), do: status(msg, false)
+  def message(msg), do: message(msg, false)
 
-  def status(nil, _) do
+  def message(nil, _) do
     draw_frame
   end
-  def status("", _) do
+  def message("", _) do
     draw_frame
   end
-  def status(msg, true) do
-    status(msg, false)
+  def message(msg, true) do
+    message(msg, false)
   end
-  def status(msg, false) do
-    {max_row, _} = :cecho.getmaxyx
-    :cecho.move(max_row-1, 0)
-    clrtoeol
-    msg |> to_char_list |> :cecho.addstr
+  def message(msg, false) do
+    Logger.info(msg)
+    # TODO
+    # if @message_win
+    #   @message_win.clear
+    #   @message_win.addstr(str)
+    #   @message_win.refresh
+    # else
+    #   $stderr.puts str
+    # end
+    # @pm.debug "#{Time.now} #{str}"
   end
 
   def help(file) do
-    win = Geometry.help_rect |> Window.create(nil, "Blister Help")
+    win = Window.create(G.help_rect, "Blister Help")
     lines = file |> File.read! |> String.split("\n")
     modal_display(win, lines)
   end
@@ -57,14 +63,8 @@ defmodule Blister.GUI do
   Display a titled dialog that displays `lines`. Wait for a keypress, then
   erase the dialog. Return the keypress.
   """
-  def modal_display(%Window{win: w} = win, lines) do
-    Window.draw(win)
-    :cecho.wmove(w, 1, 2)
-    lines |> Enum.map(fn line ->
-      :cecho.waddstr(w, line |> to_char_list)
-      {row, _} = :cecho.getyx(w)
-      :cecho.wmove(w, row+1, 2)
-    end)
+  def modal_display(%Window{win: w}, lines) do
+    draw_text_win(w, lines)
     :cecho.wrefresh(w)
 
     ch = :cecho.getch
@@ -72,6 +72,16 @@ defmodule Blister.GUI do
     :cecho.touchwin(:cecho_consts.ceSTDSCR)
     :cecho.refresh
     ch
+  end
+
+  def draw_text_win(%Window{win: w} = win, lines) do
+    Window.draw(win)
+    :cecho.wmove(w, 1, 2)
+    lines |> Enum.map(fn line ->
+      :cecho.waddstr(w, line |> to_char_list)
+      {row, _} = :cecho.getyx(w)
+      :cecho.wmove(w, row+1, 2)
+    end)
   end
 
   def getch do
@@ -83,6 +93,12 @@ defmodule Blister.GUI do
   end
 
   # ================ Handlers ================
+
+  def handle_call(:refresh_all, _from, windows) do
+    Logger.debug("gui handler refresh_all")
+    windows = refresh_all(windows)
+    {:reply, :ok, windows}
+  end
 
   def handle_cast(:cleanup, state) do
     Logger.info("gui cleanup")
@@ -99,20 +115,6 @@ defmodule Blister.GUI do
   end
 
   # ================ Helpers ================
-
-  defp clrtoeol do
-    {_, max_col} = :cecho.getmaxyx
-    {row, col} = :cecho.getyx
-    do_clrtoeol(col, max_col)
-    :cecho.move(row, col)
-  end
-
-  defp do_clrtoeol(c, mc) when c > mc do
-  end
-  defp do_clrtoeol(c, mc) do
-    :cecho.addch(?\s)
-    do_clrtoeol(c+1, mc)
-  end
 
   defp draw_frame do
     :cecho.box(:cecho_consts.ceSTDSCR, :cecho_consts.ceACS_VLINE,
@@ -132,4 +134,71 @@ defmodule Blister.GUI do
     :cecho.waddch(win, ?\s)
   end
 
+  defp config_curses do
+    :application.start(:cecho)
+    :cecho.cbreak
+    :cecho.noecho
+    :cecho.keypad(:cecho_consts.ceSTDSCR, true)
+    :cecho.curs_set(:cecho_consts.ceCURS_INVISIBLE)
+  end
+
+  defp create_windows do
+    windows = %{
+      song_lists_win: ListWindow.create(G.song_lists_rect, nil, &Pack.song_list/0),
+      song_list_win: ListWindow.create(G.song_list_rect, "Song List", &Pack.song/0),
+      song_win: ListWindow.create(G.song_rect, "Song", &Pack.patch/0),
+      patch_win: PatchWindow.create(G.patch_rect, "Patch"),
+      message_win: Window.create(G.message_rect, nil),
+      trigger_win: Window.create(G.trigger_rect, "Triggers"),
+      info_win: InfoWindow.create(G.info_rect, "Song Notes")
+    }
+
+    draw_frame
+    :cecho.refresh
+
+    # TODO
+    # message_win.scrollok(false)
+
+    windows
+  end
+
+  defp refresh_all(windows) do
+    Logger.debug("refresh_all")
+    windows = set_window_data(windows)
+    windows = %{windows |
+                song_lists_win: ListWindow.draw(windows.song_lists_win),
+                song_list_win: ListWindow.draw(windows.song_list_win),
+                song_win: ListWindow.draw(windows.song_win),
+                patch_win: PatchWindow.draw(windows.patch_win),
+                message_win: Window.draw(windows.message_win),
+                trigger_win: TriggerWindow.draw(windows.trigger_win),
+                info_win: InfoWindow.draw(windows.info_win)
+               }
+
+    :cecho.refresh
+    windows |> Map.values |> Enum.map(&:cecho.wrefresh/1)
+    # TODO for efficiency: replace the above with the below
+    # ([stdscr] + wins).map(&:noutrefresh)
+    # Curses.doupdate
+
+    windows
+  end
+
+  defp set_window_data(windows) do
+    Logger.debug("set window data")
+    song = Pack.song
+    patch = Pack.patch
+
+result =
+    %{windows |
+      song_lists_win: ListWindow.set_contents(windows.song_lists_win, "Song Lists", Pack.song_lists),
+      song_win: ListWindow.set_contents(windows.song_win,
+                                        (if song, do: song.name, else: nil),
+                                        (if song, do: song.patches, else: nil)),
+      info_win: InfoWindow.set_text(windows.info_win, (if song, do: song.notes, else: nil)),
+      patch_win: PatchWindow.set_patch(windows.patch_win, patch)
+    }
+    Logger.info("done setting window data")
+result
+  end
 end

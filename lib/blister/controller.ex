@@ -18,15 +18,15 @@ defmodule Blister.Controller do
   # ================ API ================
 
   def start_link do
-    # TODO supervise the command loop
-    looper = spawn(&command_loop/0)
-    GenServer.start_link(__MODULE__, %State{looper: looper}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   def init(state) do
     Logger.info("controller init")
     {:ok, state}
   end
+
+  def start_command_loop, do: GenServer.call(__MODULE__, :start_command_loop)
 
   def next_patch, do: Pack.next_patch
   def prev_patch, do: Pack.prev_patch
@@ -42,20 +42,31 @@ defmodule Blister.Controller do
 
   # ================ GenServer ================
 
+  def handle_call(:start_command_loop, _from, _) do
+    Logger.debug("controller handler :start_command_loop")
+    # TODO supervise the command loop
+    state = %State{looper: spawn(&command_loop/0)}
+    Logger.debug("state = #{inspect state}")
+    {:reply, nil, state}
+  end
+
   def handle_call(:next_patch, _from, state) do
-    Pack.cursor.
+    # TODO
     {:reply, nil, state}
   end
 
   def handle_call(:prev_patch, _from, state) do
+    # TODO
     {:reply, nil, state}
   end
 
   def handle_call(:next_song, _from, state) do
+    # TODO
     {:reply, nil, state}
   end
 
   def handle_call(:prev_song, _from, state) do
+    # TODO
     {:reply, nil, state}
   end
 
@@ -75,10 +86,11 @@ defmodule Blister.Controller do
 
   # ================ Helpers ================
 
-  def command_loop(status_message \\ nil) do
+  def command_loop do
+    Logger.debug("command_loop")
     GUI.refresh
+    Logger.debug("command_loop back from GUI.refresh")
     c = GUI.getch
-    GUI.status(nil)
     if c > 0 do
       Logger.debug("key pressed: #{[c]} (#{c})")
     end
@@ -104,10 +116,10 @@ defmodule Blister.Controller do
       @esc -> :ok               # panic
       ?l -> :ok                 # load
       ?s -> :ok                 # save
-      ch when ch > 0 ->
-        GUI.status("#{[ch]}: huh? (press \"h\" for help)")
-      _ ->
-        # nop
+      # TODO use message window
+      # ch when ch > 0 ->
+      #   GUI.status("#{[ch]}: huh? (press \"h\" for help)")
+      _ -> :ok
       # TODO resize
     end
     command_loop

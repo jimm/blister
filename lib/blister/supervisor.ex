@@ -10,7 +10,7 @@ defmodule Blister.Supervisor do
     children = [
       worker(Pack, []),
       worker(MIDI, []),
-      worker(GUI, []),          # must be started before controller
+      worker(GUI, []),
       worker(Controller, [])
     ]
     supervise(children, strategy: :one_for_one)

@@ -11,14 +11,17 @@ defmodule Blister.Pack do
   what file was loaded, what GUI to use, etc.
   """
 
+  require Logger
   alias Blister.{Cursor, SongList}
 
   def start_link do
+    Logger.info("pack init")
     Agent.start_link(
       fn ->
         %__MODULE__{inputs: [], outputs: [], all_songs: [], song_lists: [],
                     messages: [], message_bindings: %{}, code_bindings: %{},
-                    use_midi: true, gui: nil, loaded_file: nil, cursor: nil}
+                    use_midi: true, gui: nil, loaded_file: nil,
+                    cursor: %Cursor{}}
       end,
       name: __MODULE__)
   end
@@ -34,6 +37,10 @@ defmodule Blister.Pack do
   def use_midi?,        do: Agent.get(__MODULE__, fn pack -> pack.use_midi end)
   def gui,              do: Agent.get(__MODULE__, fn pack -> pack.gui end)
   def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
+
+  def song_list, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song_list end)
+  def song,      do: Agent.get(__MODULE__, fn pack -> pack.cursor.song end)
+  def patch,     do: Agent.get(__MODULE__, fn pack -> pack.cursor.patch end)
 
   def next_patch do
     Agent.update(__MODULE__, fn pack ->

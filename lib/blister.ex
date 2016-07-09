@@ -24,6 +24,8 @@ defmodule Blister do
   defp run do
     Logger.info("starting supervisor")
     result = Blister.Supervisor.start_link()
+    Logger.debug("supervisor started result = #{inspect result}, calling start_command_loop")
+    Blister.Controller.start_command_loop
     receive do
       :quit -> :ok              # never received, but keeps app running
     end

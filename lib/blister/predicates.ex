@@ -11,6 +11,9 @@ defmodule Blister.Predicates do
   def note?({b, _, _}) when (b &&& 0xf0) < 0xb0, do: true
   def note?(_), do: false
 
+  def pc?({b, _, _}) when (b &&& 0xf0) == 0xc0, do: true
+  def pc?(_), do: false
+
   def channel({status, _, _}), do: status &&& 0x0f
   def channel(status) when is_integer(status), do: status &&& 0x0f
 end
