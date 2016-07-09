@@ -1,5 +1,7 @@
 # Blister
 
+**NOTE**: Blister isn't anywhere near done yet.
+
 Blister is a MIDI processing and patching system. It allows a musician to
 reconfigure a MIDI setup instantaneously and modify the MIDI data in real
 time.
