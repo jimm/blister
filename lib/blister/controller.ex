@@ -1,7 +1,7 @@
 defmodule Blister.Controller do
   use GenServer
   require Logger
-  alias Blister.{Input, GUI, MIDI, Pack}
+  alias Blister.Pack
 
   @helpfile "priv/help.txt"
   @f1 :cecho_consts.ceKEY_F(1)
@@ -12,13 +12,13 @@ defmodule Blister.Controller do
   @right :cecho_consts.ceKEY_RIGHT
 
   defmodule State do
-    defstruct [:looper]
+    defstruct [:gui, :looper]
   end
 
   # ================ API ================
 
-  def start_link do
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  def start_link(gui) do
+    GenServer.start_link(__MODULE__, %State{gui: gui}, name: __MODULE__)
   end
 
   def init(state) do
@@ -33,64 +33,40 @@ defmodule Blister.Controller do
   def next_song, do: Pack.next_song
   def prev_song, do: Pack.prev_song
   def help, do: GenServer.call(__MODULE__, :help)
-  def info, do: GenServer.call(__MODULE__, :info)
 
   def quit do
     Logger.info("controller quitting")
+    GenServer.call(__MODULE__, :gui_cleanup)
     Blister.Supervisor.quit
   end
 
   # ================ GenServer ================
 
-  def handle_call(:start_command_loop, _from, _) do
+  def handle_call(:start_command_loop, _from, state) do
     Logger.debug("controller handler :start_command_loop")
     # TODO supervise the command loop
-    state = %State{looper: spawn(&command_loop/0)}
+    state = %{state | looper: spawn(fn -> command_loop(state.gui) end)}
     Logger.debug("state = #{inspect state}")
     {:reply, nil, state}
   end
 
-  def handle_call(:next_patch, _from, state) do
-    # TODO
-    {:reply, nil, state}
-  end
-
-  def handle_call(:prev_patch, _from, state) do
-    # TODO
-    {:reply, nil, state}
-  end
-
-  def handle_call(:next_song, _from, state) do
-    # TODO
-    {:reply, nil, state}
-  end
-
-  def handle_call(:prev_song, _from, state) do
-    # TODO
-    {:reply, nil, state}
-  end
-
   def handle_call(:help, _from, state) do
-    GUI.help(@helpfile)
+    state.gui.help(@helpfile)
     {:reply, nil, state}
   end
 
-  def handle_call(:info, _from, state) do
-    input_strs = MIDI.inputs |> Enum.map(&Input.name/1) |> numbered_list
-    output_strs = MIDI.outputs |> Enum.map(&(&1.name)) |> numbered_list
-    lines = ["Inputs"] ++ input_strs ++
-      ["", "Outputs"] ++ output_strs
-    GUI.modal_display("Info", lines)
+  def handle_call(:gui_cleanup, _from, state) do
+    state.gui.cleanup
     {:reply, nil, state}
   end
 
   # ================ Helpers ================
 
-  def command_loop do
+  def command_loop(gui) do
     Logger.debug("command_loop")
-    GUI.refresh
-    Logger.debug("command_loop back from GUI.refresh")
-    c = GUI.getch
+    gui.update
+    Logger.debug("command_loop back from GUI.update")
+    c = gui.getch
     if c > 0 do
       Logger.debug("key pressed: #{[c]} (#{c})")
     end
@@ -98,7 +74,6 @@ defmodule Blister.Controller do
       ?? -> help
       ?h -> help
       @f1 -> help
-      ?i -> info
       ?q -> quit
       ?j -> next_patch
       @down -> next_patch
@@ -122,12 +97,6 @@ defmodule Blister.Controller do
       _ -> :ok
       # TODO resize
     end
-    command_loop
-  end
-
-  defp numbered_list(list) do
-    list
-    |> Enum.with_index
-    |> Enum.map(fn {str, idx} -> "#{idx}: #{str}" end)
+    command_loop(gui)
   end
 end

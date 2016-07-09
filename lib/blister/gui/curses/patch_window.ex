@@ -1,8 +1,8 @@
-defmodule Blister.GUI.PatchWindow do
+defmodule Blister.GUI.Curses.PatchWindow do
 
   defstruct [:win, :patch]
 
-  alias Blister.GUI.Window
+  alias Blister.GUI.Curses.Window
 
   def create(r, title_prefix, title \\ nil) do
     %__MODULE__{win: Window.create(r, title_prefix, title), patch: nil}

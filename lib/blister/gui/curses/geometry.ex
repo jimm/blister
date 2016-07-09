@@ -1,6 +1,6 @@
 # Defines positions and sizes of windows. Rects contain {height, width, top,
 # left}.
-defmodule Blister.GUI.Geometry do
+defmodule Blister.GUI.Curses.Geometry do
 
   def song_list_rect do
     g = geometry

@@ -1,6 +1,6 @@
-defmodule Blister.GUI.ListWindow do
+defmodule Blister.GUI.Curses.ListWindow do
 
-  alias Blister.GUI.Window
+  alias Blister.GUI.Curses.Window
   require Logger
 
   defstruct [:win, :list, :offset, :curr_item_func]

@@ -23,7 +23,8 @@ defmodule Blister do
 
   defp run do
     Logger.info("starting supervisor")
-    result = Blister.Supervisor.start_link()
+    # TODO make gui_module selectable
+    result = Blister.Supervisor.start_link(Blister.GUI.Text)
     Logger.debug("supervisor started result = #{inspect result}, calling start_command_loop")
     Blister.Controller.start_command_loop
     receive do

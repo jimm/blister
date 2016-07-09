@@ -1,23 +1,22 @@
 defmodule Blister.Supervisor do
   use Supervisor
-  alias Blister.{Pack, MIDI, GUI, Controller}
+  alias Blister.{Pack, MIDI, Controller}
 
-  def start_link() do
-    Supervisor.start_link(__MODULE__, [], name: :blister_supervisor)
+  def start_link(gui_module) do
+    Supervisor.start_link(__MODULE__, gui_module, name: :blister_supervisor)
   end
 
-  def init(_) do
+  def init(gui_module) do
     children = [
       worker(Pack, []),
       worker(MIDI, []),
-      worker(GUI, []),
-      worker(Controller, [])
+      worker(gui_module, []),
+      worker(Controller, [gui_module])
     ]
     supervise(children, strategy: :one_for_one)
   end
 
   def quit do
-    GUI.cleanup
     MIDI.cleanup
     :init.stop
   end

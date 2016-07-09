@@ -17,22 +17,22 @@ defmodule Blister.Cursor do
     song_name: nil,
     patch_name: nil
 
-  alias Blister.{Patch, SongList, Pack}
+  alias Blister.{Patch, SongList}
 
   def clear(cursor) do
     # Do not erase names saved by `mark`.
     %{cursor | song_list: [], song: nil, patch: nil}
   end
 
-  def init(cursor) do
-    song_list = first_of(Pack.song_lists)
+  def init(cursor, pack) do
+    song_list = first_of(pack.song_lists)
     song = first_of(song_list)
     patch = if song, do: first_of(song.patches)
     %{cursor | song_list: song_list, song: song, patch: patch}
   end
 
-  def next_song(%{song_list: nil} = cursor), do: cursor
-  def next_song(%{song_list: %SongList{songs: []}} = cursor), do: cursor
+  def next_song(%{song_list: nil} = cursor, _), do: cursor
+  def next_song(%{song_list: %SongList{songs: []}} = cursor, _), do: cursor
   def next_song(cursor) do
     if last_of(cursor.songs) == cursor.song do
       cursor
@@ -91,11 +91,11 @@ defmodule Blister.Cursor do
     end
   end
 
-  def goto_song(cursor, name_regex_str) do
+  def goto_song(cursor, pack, name_regex_str) do
     new_song = if cursor.song_list do
       SongList.find(cursor.song_list, name_regex_str)
     end
-    new_song = new_song || SongList.find(Pack.all_songs, name_regex_str)
+    new_song = new_song || SongList.find(pack.all_songs, name_regex_str)
     new_patch = if new_song, do: hd(new_song.patches), else: nil
 
     if new_song && new_song != cursor.song || # moved to new song
@@ -106,7 +106,7 @@ defmodule Blister.Cursor do
         cursor.song_list
       else
         # Not found in current song list. Switch to list of all songs.
-        Pack.all_songs
+        pack.all_songs
       end
 
       Patch.start(new_patch)
@@ -114,9 +114,9 @@ defmodule Blister.Cursor do
     end
   end
 
-  def goto_song_list(cursor, name_regex_str) do
+  def goto_song_list(cursor, pack, name_regex_str) do
     {:ok, r} = Regex.compile(name_regex_str, "i")
-    new_song_list = Pack.song_lists |> Enum.find(fn sl ->
+    new_song_list = pack.song_lists |> Enum.find(fn sl ->
       Regex.match?(r, sl.name)
     end)
     if new_song_list == nil do
@@ -148,9 +148,9 @@ defmodule Blister.Cursor do
   Since names can change we use Damerau-Levenshtein distance on lowercase
   versions of all strings.
   """
-  def restore(%{song_list_name: nil} = cursor), do: cursor
-  def restore(cursor) do
-    song_list = find_nearest_match(Pack.song_lists, cursor.song_list_name) || Pack.all_songs
+  def restore(%{song_list_name: nil} = cursor, _), do: cursor
+  def restore(cursor, pack) do
+    song_list = find_nearest_match(pack.song_lists, cursor.song_list_name) || pack.all_songs
     song = find_nearest_match(song_list.songs, cursor.song_name) || first_of(song_list.songs)
     patch = if song do
       find_nearest_match(song.patches, cursor.patch_name) || hd(song.patches)

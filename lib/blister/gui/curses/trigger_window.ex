@@ -1,6 +1,6 @@
-defmodule Blister.GUI.TriggerWindow do
+defmodule Blister.GUI.Curses.TriggerWindow do
 
-  alias Blister.GUI.Window
+  alias Blister.GUI.Curses.Window
 
   def draw(twin) do
     Window.draw(twin)

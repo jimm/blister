@@ -1,4 +1,4 @@
-defmodule Blister.GUI.Window do
+defmodule Blister.GUI.Curses.Window do
 
   defstruct [:win, :r, :title_prefix, :title, :max_contents_len, :visible_height]
 

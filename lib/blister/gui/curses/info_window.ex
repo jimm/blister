@@ -1,9 +1,9 @@
-defmodule Blister.GUI.InfoWindow do
+defmodule Blister.GUI.Curses.InfoWindow do
 
   defstruct [:win, :text]
 
-  alias Blister.GUI
-  alias Blister.GUI.Window
+  alias Blister.GUI.Curses
+  alias Blister.GUI.Curses.Window
   require Logger
 
   def create(rect, title_prefix) do
@@ -16,7 +16,7 @@ defmodule Blister.GUI.InfoWindow do
   end
 
   def draw(%__MODULE__{win: w, text: text} = iwin) do
-    GUI.draw_text_win(w, text)
+    Curses.draw_text_win(w, text)
     iwin
   end
 end

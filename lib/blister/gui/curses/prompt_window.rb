@@ -1,6 +1,6 @@
 require 'curses'
 
-defmodule Blister.GUI.PromptWindow do
+defmodule Blister.GUI.Curses.PromptWindow do
 
   MAX_WIDTH = 30
 

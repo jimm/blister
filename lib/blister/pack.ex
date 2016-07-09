@@ -8,7 +8,7 @@ defmodule Blister.Pack do
 
   @moduledoc """
   Holds all state related to a single Blister setup: all songs and patches,
-  what file was loaded, what GUI to use, etc.
+  what file was loaded, etc.
   """
 
   require Logger
@@ -20,8 +20,7 @@ defmodule Blister.Pack do
       fn ->
         %__MODULE__{inputs: [], outputs: [], all_songs: [], song_lists: [],
                     messages: [], message_bindings: %{}, code_bindings: %{},
-                    use_midi: true, gui: nil, loaded_file: nil,
-                    cursor: %Cursor{}}
+                    use_midi: true, loaded_file: nil, cursor: %Cursor{}}
       end,
       name: __MODULE__)
   end
@@ -35,7 +34,6 @@ defmodule Blister.Pack do
   def message_bindings, do: Agent.get(__MODULE__, fn pack -> pack.message_bindings end)
   def code_bindings,    do: Agent.get(__MODULE__, fn pack -> pack.code_bindings end)
   def use_midi?,        do: Agent.get(__MODULE__, fn pack -> pack.use_midi end)
-  def gui,              do: Agent.get(__MODULE__, fn pack -> pack.gui end)
   def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
 
   def song_list, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song_list end)
