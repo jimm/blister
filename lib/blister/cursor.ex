@@ -9,85 +9,84 @@ defmodule Blister.Cursor do
   up to date.
   """
 
-  defstruct song_list: [],
-    song: nil,
-    patch: nil,
-    song_list: nil,
+  defstruct song_list_index: 0, song_list: [],
+    song_index: 0, song: nil,
+    patch_index: 0, patch: nil,
     song_list_name: nil,
     song_name: nil,
     patch_name: nil
 
   alias Blister.{Patch, SongList}
 
-  def clear(cursor) do
-    # Do not erase names saved by `mark`.
-    %{cursor | song_list: [], song: nil, patch: nil}
-  end
-
-  def init(cursor, pack) do
+  # TODO call this every time we add a new song or patch
+  def create(pack) do
+    song_list_index = 0
     song_list = first_of(pack.song_lists)
     song = first_of(song_list)
     patch = if song, do: first_of(song.patches)
-    %{cursor | song_list: song_list, song: song, patch: patch}
+    %__MODULE__{song_list: song_list, song: song, patch: patch}
+  end
+
+  def init(cursor, pack) do
   end
 
   def next_song(%{song_list: nil} = cursor, _), do: cursor
   def next_song(%{song_list: %SongList{songs: []}} = cursor, _), do: cursor
-  def next_song(cursor) do
-    if last_of(cursor.songs) == cursor.song do
-      cursor
-    else
+  def next_song(cursor, pack) do
+    new_song_index = cursor.song_index + 1
+    if new_song_index < length(cursor.song_list) do
       Patch.stop(cursor.patch)
-      idx = index_of(cursor.song_list.songs, cursor.song)
-      song = cursor.song_list.songs |> Enum.at(idx + 1)
+      song = cursor.song_list.songs |> Enum.at(new_song_index)
       patch = song.patches |> hd
+      new_patch_index = 0
       Patch.start(patch)
-      %{cursor | song: song, patch: patch}
+      %{cursor |
+        song_index: new_song_index, song: song,
+        patch_index: new_patch_index, patch: patch}
+    else
+      cursor
     end
   end
 
   def prev_song(%{song_list: nil} = cursor), do: cursor
   def prev_song(%{song_list: %SongList{songs: []}} = cursor), do: cursor
-  def prev_song(cursor) do
-    if first_of(cursor.songs) == cursor.song do
-      cursor
-    else
+  def prev_song(cursor, pack) do
+    new_song_index = cursor.song_index - 1
+    if new_song_index >= 0 do
       Patch.stop(cursor.patch)
-      idx = index_of(cursor.song_list.songs, cursor.song)
-      song = cursor.song_list.songs |> Enum.at(idx - 1)
+      song = cursor.song_list.songs |> Enum.at(new_song_index)
+      new_patch_index = 0
       patch = song.patches |> hd
       Patch.start(patch)
-      %{cursor | song: song, patch: patch}
+      %{cursor |
+        song_index: new_song_index, song: song,
+        patch_index: new_patch_index, patch: patch}
+    else
+      cursor
     end
   end
 
-  def next_patch(%{song: nil} = cursor), do: cursor
-  def next_patch(cursor) do
-    if last_of(cursor.song.patches) == cursor.patch do
-      cursor
-    else
-      if cursor.patch do
-        Patch.stop(cursor.patch)
-        idx = index_of(cursor.song.patches, cursor.patch)
-        patch = cursor.song.patches |> Enum.at(idx + 1)
-        Patch.start(patch)
-        %{cursor | patch: patch}
-      end
+  def next_patch(%{song: nil} = cursor, _), do: cursor
+  def next_patch(%{song: %{patches: []}} = cursor, _), do: cursor
+  def next_patch(cursor, pack) do
+    new_patch_index = cursor.patch_index + 1
+    if new_patch_index < length(cursor.song.patches) do
+      Patch.stop(cursor.patch)
+      patch = cursor.song.patches |> Enum.at(new_patch_index)
+      Patch.start(patch)
+      %{cursor | patch_index: new_patch_index, patch: patch}
     end
   end
 
-  def prev_patch(%{song: nil} = cursor), do: cursor
-  def prev_patch(cursor) do
-    if last_of(cursor.song.patches) == cursor.patch do
-      cursor
-    else
-      if cursor.patch do
-        Patch.stop(cursor.patch)
-        idx = index_of(cursor.song.patches, cursor.patch)
-        patch = cursor.song.patches |> Enum.at(idx - 1)
-        Patch.start(patch)
-        %{cursor | patch: patch}
-      end
+  def prev_patch(%{song: nil} = cursor, _), do: cursor
+  def prev_patch(%{song: %{patches: []}} = cursor, _), do: cursor
+  def prev_patch(cursor, pack) do
+    new_patch_index = cursor.patch_index - 1
+    if new_patch_index >= 0 do
+      Patch.stop(cursor.patch)
+      patch = cursor.song.patches |> Enum.at(new_patch_index)
+      Patch.start(patch)
+      %{cursor | patch_index: new_patch_index, patch: patch}
     end
   end
 

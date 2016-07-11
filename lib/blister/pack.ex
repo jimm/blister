@@ -18,9 +18,11 @@ defmodule Blister.Pack do
     Logger.info("pack init")
     Agent.start_link(
       fn ->
-        %__MODULE__{inputs: [], outputs: [], all_songs: [], song_lists: [],
-                    messages: [], message_bindings: %{}, code_bindings: %{},
-                    use_midi: true, loaded_file: nil, cursor: %Cursor{}}
+        pack = %__MODULE__{inputs: [], outputs: [], all_songs: [], song_lists: [],
+                           messages: [], message_bindings: %{}, code_bindings: %{},
+                           use_midi: true, loaded_file: nil}
+        cursor = Cursor.create(pack)
+        %{pack | cursor: cursor}
       end,
       name: __MODULE__)
   end
@@ -42,22 +44,22 @@ defmodule Blister.Pack do
 
   def next_patch do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: cursor |> Cursor.next_patch}
+      %{pack | cursor: pack.cursor |> Cursor.next_patch(pack)}
     end)
   end
   def prev_patch do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: cursor |> Cursor.prev_patch}
+      %{pack | cursor: pack.cursor |> Cursor.prev_patch(pack)}
     end)
   end
   def next_song do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: cursor |> Cursor.next_song}
+      %{pack | cursor: pack.cursor |> Cursor.next_song(pack)}
     end)
   end
   def prev_song do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: cursor |> Cursor.prev_song}
+      %{pack | cursor: pack.cursor |> Cursor.prev_song(pack)}
     end)
   end
 
