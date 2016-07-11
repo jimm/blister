@@ -15,7 +15,7 @@ defmodule Blister.GUI.Curses do
   def start_link do
     config_curses
     windows = create_windows
-    GenServer.start_link(__MODULE__, windows)
+    GenServer.start_link(__MODULE__, windows, name: __MODULE__)
   end
 
   def init(state) do

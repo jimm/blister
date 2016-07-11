@@ -14,7 +14,7 @@ defmodule Blister.Input do
                    input: input,
                    connections: connections,
                    listener: listener}
-    {:ok, pid} = GenServer.start_link(__MODULE__, state)
+    {:ok, pid} = GenServer.start_link(__MODULE__, state, name: __MODULE__)
     send(listener, {:set_state, {input, pid}})
     :ok = PortMidi.listen(input, listener)
     {:ok, pid}

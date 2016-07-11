@@ -7,17 +7,18 @@ defmodule Blister.GUI.Text do
   # ================ Server ================
 
   def start_link do
-    Logger.info("text gui init")
-    GenServer.start_link(__MODULE__, [])
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   def init(_) do
-    Logger.info("curses gui init")
+    Logger.info("text gui init")
     Process.flag(:trap_exit, true)
     {:ok, []}
   end
 
   # ================ API ================
+
+  def set_commands(chars), do: GenServer.call(__MODULE__, {:set_commands, chars})
 
   def update do
     IO.puts "Song list names:"
@@ -34,19 +35,26 @@ defmodule Blister.GUI.Text do
   end
 
   def help(file) do
-    file |> File.read! |> String.split("\n") |> IO.puts
+    file |> File.read! |> IO.puts
     :ok
   end
 
-  def getch do
-    (IO.gets "command: ") |> to_char_list |> hd
-  end
+  def getch, do: GenServer.call(__MODULE__, :getch)
 
   def cleanup do
     :ok
   end
 
   # ================ Handlers ================
+
+  def handle_call({:set_commands, chars}, _from, _) do
+    {:reply, :ok, chars}
+  end
+
+  def handle_call(:getch, _from, [ch | commands]) do
+    Logger.info("text gui returning #{[ch] |> to_string} from getch")
+    {:reply, ch, commands}
+  end
 
   def terminate(_reason, _state) do
     Logger.info("text gui terminate")
