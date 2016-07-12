@@ -1,4 +1,3 @@
-IO.inspect __ENV__
 %{
   inputs: [mb: "midiboard", ws_in: "WaveStation"],
   outputs: [{:ws_out, "WaveStation"}, {:kz, "K2000R"}, :sj],

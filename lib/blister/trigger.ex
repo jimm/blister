@@ -21,6 +21,6 @@ defmodule Blister.Trigger do
 
   def do_signal(func) do
     func.()
-    Pack.gui.update
+    Blister.Pack.gui.update
   end
 end

@@ -75,7 +75,8 @@ defmodule Blister.GUI.Curses.PatchWindow do
   end
 
   defp filter_string(nil), do: ""
-  defp filter_string(filter), do: inspect(filter)
+  # TODO
+  defp filter_string(filter), do: IO.inspect(filter) # DEBUG
   # def filter_string(filter)
   #   filter.to_s.gsub(/\s*#.*/, '').gsub(/\n\s*/, "; ")
   # end

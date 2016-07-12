@@ -84,6 +84,14 @@ defmodule Blister.Pack do
   end
 
   def save(_file) do
+    # TODO
+  end
+
+  def reload do
+    file = Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
+    if file != nil do
+      load(file)
+    end
   end
 
   # TODO all accessors: add/remove song, song list, message, bindings, etc.
@@ -94,7 +102,8 @@ defmodule Blister.Pack do
   def bind_code(_code_key) do
   end
 
-  defp load_setup(pack, setup) do
+  defp load_setup(pack, _setup) do
+    # TODO
     %{pack |
       cursor: pack.cursor |> Cursor.init(pack)}
   end

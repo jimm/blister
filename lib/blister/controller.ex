@@ -50,7 +50,6 @@ defmodule Blister.Controller do
     Logger.debug("controller handler :start_command_loop")
     # TODO supervise the command loop
     state = %{state | looper: spawn(fn -> command_loop(state.gui) end)}
-    Logger.debug("state = #{inspect state}")
     {:reply, nil, state}
   end
 
