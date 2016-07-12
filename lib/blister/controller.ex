@@ -34,6 +34,10 @@ defmodule Blister.Controller do
   def prev_song, do: Pack.prev_song
   def help, do: GenServer.call(__MODULE__, :help)
 
+  def load, do: GenServer.call(__MODULE__, :load)
+  def save, do: GenServer.call(__MODULE__, :save)
+  def reload, do: Pack.reload
+
   def quit do
     Logger.info("controller quitting")
     GenServer.call(__MODULE__, :gui_cleanup)
@@ -47,6 +51,22 @@ defmodule Blister.Controller do
     # TODO supervise the command loop
     state = %{state | looper: spawn(fn -> command_loop(state.gui) end)}
     Logger.debug("state = #{inspect state}")
+    {:reply, nil, state}
+  end
+
+  def handle_call(:load, _from, state) do
+    case state.gui.prompt("Load File", "File", Pack.loaded_file) do
+      {:ok, file} -> Pack.load(file)
+      _ -> nil
+    end
+    {:reply, nil, state}
+  end
+
+  def handle_call(:save, _from, state) do
+    case state.gui.prompt("Save File", "File", Pack.loaded_file) do
+      {:ok, file} -> Pack.save(file)
+      _ -> nil
+    end
     {:reply, nil, state}
   end
 
@@ -87,10 +107,10 @@ defmodule Blister.Controller do
       ?g -> :ok                 # go to song
       ?t -> :ok                 # go to song list
       ?e -> :ok                 # edit
-      ?r -> :ok                 # reload
       @esc -> :ok               # panic
-      ?l -> :ok                 # load
-      ?s -> :ok                 # save
+      ?l -> load                # load
+      ?s -> save                # save
+      ?r -> reload              # reload
       # TODO use message window
       # ch when ch > 0 ->
       #   GUI.status("#{[ch]}: huh? (press \"h\" for help)")

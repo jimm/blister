@@ -41,6 +41,20 @@ defmodule Blister.GUI.Text do
 
   def getch, do: GenServer.call(__MODULE__, :getch)
 
+  def prompt(title, _prompt, default) do
+    Logger.debug "prompt"
+    gets_prompt = title <> case default do
+                             nil -> ""
+                             _ -> " (#{default})"
+                           end
+    Logger.debug "prompt = #{gets_prompt}"
+    str = IO.gets("#{gets_prompt}: ") |> String.trim
+    case str do
+      "" -> nil
+      _ -> {:ok, str}
+    end
+  end
+
   def cleanup do
     :ok
   end
@@ -52,7 +66,8 @@ defmodule Blister.GUI.Text do
   end
 
   def handle_call(:getch, _from, [ch | commands]) do
-    Logger.info("text gui returning #{[ch] |> to_string} from getch")
+    # Logger.info("text gui returning #{[ch] |> to_string} from getch")
+    ch = IO.gets("command: ") |> to_char_list |> hd
     {:reply, ch, commands}
   end
 

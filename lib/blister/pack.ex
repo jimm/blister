@@ -1,15 +1,14 @@
 defmodule Blister.Pack do
-
-  defstruct [
-    :inputs, :outputs, :all_songs, :song_lists, :messages,
-    :message_bindings, :code_bindings, :use_midi, :gui, :loaded_file,
-    :cursor
-  ]
-
   @moduledoc """
   Holds all state related to a single Blister setup: all songs and patches,
   what file was loaded, etc.
   """
+
+  defstruct [
+    :inputs, :outputs, :all_songs, :song_lists, :messages,
+    :message_bindings, :triggers, :code_bindings, :use_midi, :gui,
+    :loaded_file, :cursor
+  ]
 
   require Logger
   alias Blister.{Cursor, SongList}
@@ -21,13 +20,12 @@ defmodule Blister.Pack do
         pack = %__MODULE__{inputs: [], outputs: [], all_songs: [], song_lists: [],
                            messages: [], message_bindings: %{}, code_bindings: %{},
                            use_midi: true, loaded_file: nil}
-        cursor = Cursor.create(pack)
+        cursor = %Cursor{} |> Cursor.init(pack)
         %{pack | cursor: cursor}
       end,
       name: __MODULE__)
   end
 
-  def cursor,           do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
   def inputs,           do: Agent.get(__MODULE__, fn pack -> pack.inputs end)
   def outputs,          do: Agent.get(__MODULE__, fn pack -> pack.outputs end)
   def all_songs,        do: Agent.get(__MODULE__, fn pack -> pack.all_songs end)
@@ -36,7 +34,9 @@ defmodule Blister.Pack do
   def message_bindings, do: Agent.get(__MODULE__, fn pack -> pack.message_bindings end)
   def code_bindings,    do: Agent.get(__MODULE__, fn pack -> pack.code_bindings end)
   def use_midi?,        do: Agent.get(__MODULE__, fn pack -> pack.use_midi end)
+  def gui,              do: Agent.get(__MODULE__, fn pack -> pack.gui end)
   def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
+  def cursor,           do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
 
   def song_list, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song_list end)
   def song,      do: Agent.get(__MODULE__, fn pack -> pack.cursor.song end)
@@ -70,7 +70,17 @@ defmodule Blister.Pack do
     Agent.update(__MODULE__, fn pack -> %{pack | all_songs: list} end)
   end
 
-  def load(_file) do
+  def send_message(_name) do
+    # TODO
+  end
+
+  def load(file) do
+    Logger.debug("load file #{file}")
+    setup =
+      file
+      |> File.read!
+      |> Code.eval_string([], aliases: [{C, Blister.Consts}], file: file, line: 0)
+    Agent.update(__MODULE__, fn pack -> load_setup(pack, setup) end)
   end
 
   def save(_file) do
@@ -82,5 +92,10 @@ defmodule Blister.Pack do
   end
 
   def bind_code(_code_key) do
+  end
+
+  defp load_setup(pack, setup) do
+    %{pack |
+      cursor: pack.cursor |> Cursor.init(pack)}
   end
 end

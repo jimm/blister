@@ -7,7 +7,8 @@ defmodule Blister.GUI.Curses do
   use GenServer
   require Logger
   alias Blister.Pack
-  alias Blister.GUI.Curses.{Window, ListWindow, PatchWindow, TriggerWindow, InfoWindow}
+  alias Blister.GUI.Curses.{Window, ListWindow, PatchWindow, TriggerWindow,
+                            InfoWindow, PromptWindow}
   alias Blister.GUI.Curses.Geometry, as: G
 
   # ================ Server ================
@@ -60,6 +61,13 @@ defmodule Blister.GUI.Curses do
 
   def getch do
     :cecho.getch
+  end
+
+  def prompt(prompt) do
+    # TODO use PromptWindow
+    pwin = Window
+    # return {:ok, file} or nil
+    nil
   end
 
   def cleanup do
