@@ -4,24 +4,28 @@ defmodule Blister.Pack do
   what file was loaded, etc.
   """
 
-  defstruct [
-    :inputs, :outputs, :all_songs, :song_lists, :messages,
-    :message_bindings, :triggers, :code_bindings, :use_midi, :gui,
-    :loaded_file, :cursor
-  ]
-
   require Logger
-  alias Blister.{Cursor, SongList}
+  alias Blister.{Cursor, SongList, DSL}
+
+  defstruct inputs: [],
+    outputs: [],
+    all_songs: [],
+    song_lists: [],
+    messages: [],
+    message_bindings: %{},
+    triggers: %{},
+    code_bindings: %{},
+    use_midi: true,
+    gui: nil,
+    loaded_file: nil,
+    cursor: %Cursor{}
 
   def start_link do
     Logger.info("pack init")
     Agent.start_link(
       fn ->
-        pack = %__MODULE__{inputs: [], outputs: [], all_songs: [], song_lists: [],
-                           messages: [], message_bindings: %{}, code_bindings: %{},
-                           use_midi: true, loaded_file: nil}
-        cursor = %Cursor{} |> Cursor.init(pack)
-        %{pack | cursor: cursor}
+        pack = %__MODULE__{}
+        %{pack | cursor: pack.cursor |> Cursor.init(pack)}
       end,
       name: __MODULE__)
   end
@@ -76,15 +80,15 @@ defmodule Blister.Pack do
 
   def load(file) do
     Logger.debug("load file #{file}")
-    setup =
-      file
-      |> File.read!
-      |> Code.eval_string([], aliases: [{C, Blister.Consts}], file: file, line: 0)
-    Agent.update(__MODULE__, fn pack -> load_setup(pack, setup) end)
+    new_pack = DSL.load(file)
+    Agent.update(__MODULE__, fn pack ->
+      %{new_pack | cursor: pack.cursor, gui: pack.gui, use_midi: pack.use_midi}
+    end)
   end
 
-  def save(_file) do
-    # TODO
+  def save(file) do
+    pack = Agent.get(__MODULE__, fn pack -> pack end)
+    DSL.save(file, pack)
   end
 
   def reload do
@@ -100,11 +104,5 @@ defmodule Blister.Pack do
   end
 
   def bind_code(_code_key) do
-  end
-
-  defp load_setup(pack, _setup) do
-    # TODO
-    %{pack |
-      cursor: pack.cursor |> Cursor.init(pack)}
   end
 end
