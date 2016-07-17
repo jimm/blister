@@ -32,7 +32,7 @@ defmodule Blister.Cursor do
 
   def next_song(%{song_list: nil} = cursor, _), do: cursor
   def next_song(%{song_list: %SongList{songs: []}} = cursor, _), do: cursor
-  def next_song(cursor, pack) do
+  def next_song(cursor) do
     new_song_index = cursor.song_index + 1
     if new_song_index < length(cursor.song_list) do
       Patch.stop(cursor.patch)
@@ -50,7 +50,7 @@ defmodule Blister.Cursor do
 
   def prev_song(%{song_list: nil} = cursor), do: cursor
   def prev_song(%{song_list: %SongList{songs: []}} = cursor), do: cursor
-  def prev_song(cursor, pack) do
+  def prev_song(cursor) do
     new_song_index = cursor.song_index - 1
     if new_song_index >= 0 do
       Patch.stop(cursor.patch)
@@ -68,7 +68,7 @@ defmodule Blister.Cursor do
 
   def next_patch(%{song: nil} = cursor, _), do: cursor
   def next_patch(%{song: %{patches: []}} = cursor, _), do: cursor
-  def next_patch(cursor, pack) do
+  def next_patch(cursor) do
     new_patch_index = cursor.patch_index + 1
     if new_patch_index < length(cursor.song.patches) do
       Patch.stop(cursor.patch)
@@ -78,9 +78,9 @@ defmodule Blister.Cursor do
     end
   end
 
-  def prev_patch(%{song: nil} = cursor, _), do: cursor
-  def prev_patch(%{song: %{patches: []}} = cursor, _), do: cursor
-  def prev_patch(cursor, pack) do
+  def prev_patch(%{song: nil} = cursor), do: cursor
+  def prev_patch(%{song: %{patches: []}} = cursor), do: cursor
+  def prev_patch(cursor) do
     new_patch_index = cursor.patch_index - 1
     if new_patch_index >= 0 do
       Patch.stop(cursor.patch)

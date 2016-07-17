@@ -7,8 +7,8 @@ defmodule Blister.Pack do
   require Logger
   alias Blister.{Cursor, SongList, DSL}
 
-  defstruct inputs: [],
-    outputs: [],
+  defstruct inputs: %{},        # symbol => {display name, input pid}
+    outputs: %{},               # symbol => {display name, output pid}
     all_songs: [],
     song_lists: [],
     messages: [],
@@ -48,22 +48,22 @@ defmodule Blister.Pack do
 
   def next_patch do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.next_patch(pack)}
+      %{pack | cursor: pack.cursor |> Cursor.next_patch}
     end)
   end
   def prev_patch do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.prev_patch(pack)}
+      %{pack | cursor: pack.cursor |> Cursor.prev_patch}
     end)
   end
   def next_song do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.next_song(pack)}
+      %{pack | cursor: pack.cursor |> Cursor.next_song}
     end)
   end
   def prev_song do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.prev_song(pack)}
+      %{pack | cursor: pack.cursor |> Cursor.prev_song}
     end)
   end
 
@@ -104,5 +104,14 @@ defmodule Blister.Pack do
   end
 
   def bind_code(_code_key) do
+  end
+
+
+  def input_pid_from_sym(pack, sym) do
+    Map.get(pack.inputs, sym)
+  end
+
+  def output_pid_from_sym(pack, sym) do
+    Map.get(pack.outputs, sym)
   end
 end

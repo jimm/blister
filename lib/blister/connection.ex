@@ -1,19 +1,18 @@
 defmodule Blister.Connection do
   @moduledoc """
-  A Connection connects an InputInstrument to an OutputInstrument. Whenever
-  MIDI data arrives at the InputInstrument it is optionally modified or
-  filtered, then the remaining modified data is sent to the
-  OutputInstrument.
+  A Connection connects an Input to an Output. Whenever MIDI data arrives at
+  the Input it is optionally modified or filtered, then the remaining
+  modified data is sent to the Output.
 
   If `input_chan` is nil then all messages from `input` will be sent to
   `output`.
   """
 
-  defstruct [:input_pid, :input_chan, :output, :output_chan, :filter,
+  defstruct [:input_pid, :input_chan, :output_pid, :output_chan, :filter,
              :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
 
   use Bitwise
-  alias Blister.Input
+  alias Blister.MIDI.{Input, Output}
   alias Blister.Consts, as: C
   alias Blister.Predicates, as: P
 
@@ -122,8 +121,8 @@ defmodule Blister.Connection do
 
   def midi_out(_, nil), do: nil
   def midi_out(_, []), do: nil
-  def midi_out(%__MODULE__{output: nil}, _), do: nil
-  def midi_out(%__MODULE__{output: output}, messages) do
-    PortMidi.write(output, messages)
+  def midi_out(%__MODULE__{output_pid: nil}, _), do: nil
+  def midi_out(%__MODULE__{output_pid: pid}, messages) do
+    Output.write(pid, messages)
   end
 end

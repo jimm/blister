@@ -1,27 +1,27 @@
-defmodule Blister.Input do
+defmodule Blister.MIDI.Input do
   use GenServer
+  use Blister.MIDI.IO
 
   defmodule State do
-    defstruct [:name, :input, :connections, :listener]
+    defstruct [:io, :connections, :listener]
   end
 
-  # ================ public API ================
+  # ================ Public API ================
 
-  def start(name, connections) do
-    {:ok, input} = PortMidi.open(:input, name)
+  def start(name) do
+    {:ok, in_pid} = PortMidi.open(:input, name)
     listener = spawn_link(Blister.Input, :loop, [{nil, nil}])
-    state = %State{name: name,
-                   input: input,
-                   connections: connections,
+    state = %State{io: %Blister.MIDI.IO{port_pid: in_pid, port_name: name},
+                   connections: [],
                    listener: listener}
-    {:ok, pid} = GenServer.start_link(__MODULE__, state, name: __MODULE__)
-    send(listener, {:set_state, {input, pid}})
-    :ok = PortMidi.listen(input, listener)
+    {:ok, pid} = GenServer.start_link(__MODULE__, state)
+    send(listener, {:set_state, {in_pid, pid}})
+    :ok = PortMidi.listen(in_pid, listener)
     {:ok, pid}
   end
 
-  def name(pid) do
-    GenServer.call(pid, :name)
+  def set_display_name(pid, display_name) do
+    GenServer.call(pid, {:set_display_name, display_name})
   end
 
   def add_connection(pid, connection) do
@@ -30,10 +30,6 @@ defmodule Blister.Input do
 
   def remove_connection(pid, connection) do
     GenServer.cast(pid, {:remove_connection, connection})
-  end
-
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
   end
 
   @doc "Used internally to process incoming MIDI messages."
@@ -53,21 +49,17 @@ defmodule Blister.Input do
 
   def handle_cast(:stop, state) do
     send(state.listener, :stop)
-    :ok = PortMidi.close(:input, state.input)
+    :ok = PortMidi.close(:input, state.io.port_pid)
     {:stop, :normal, nil}
-  end
-
-  def handle_call(:name, _from, state) do
-    {:reply, state.name, state}
   end
 
   # ================ PortMidi listener ================
 
-  def loop({portmidi_input_pid, jex_input_pid}) do
+  def loop({portmidi_input_pid, app_input_pid}) do
     receive do
       {^portmidi_input_pid, messages} ->
-        receive_messages(jex_input_pid, messages)
-        loop({portmidi_input_pid, jex_input_pid})
+        receive_messages(app_input_pid, messages)
+        loop({portmidi_input_pid, app_input_pid})
       {:set_state, state} ->
         loop(state)
       :stop ->

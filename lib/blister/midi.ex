@@ -1,21 +1,23 @@
 defmodule Blister.MIDI do
   use GenServer
   require Logger
+  alias Blister.MIDI.{Input, Output}
 
   # ================ Server ================
 
   def start_link do
     devices = PortMidi.devices
 
-    # A list of Blister.Output structs
+    # Returns a list of {name, pid} tuples
     outputs = devices.output |> Enum.map(fn d ->
-      Blister.Output.open(d.name)
+      {:ok, output} = Output.start(d.name)
+      {d.name, output}
     end)
 
-    # A list of Blister.Input pids
+    # Returns a list of {name, pid} tuples
     inputs = devices.input |> Enum.map(fn d ->
-      {:ok, input} = Blister.Input.start(d.name, [])
-      input
+      {:ok, input} = Input.start(d.name)
+      {d.name, input}
     end)
 
     state = %{inputs: inputs, outputs: outputs}
@@ -31,14 +33,14 @@ defmodule Blister.MIDI do
   # ================ API ================
 
   @doc """
-  Returns a list of Blister.Inputs pids.
+  Returns a list of {name, pid} tuples.
   """
   def inputs do
     GenServer.call(__MODULE__, :inputs)
   end
 
   @doc """
-  Returns a list of Blister.Output structs.
+  Returns a list of {name, pid} tuples.
   """
   def outputs do
     GenServer.call(__MODULE__, :outputs)
@@ -60,8 +62,8 @@ defmodule Blister.MIDI do
 
   def handle_cast(:cleanup, %{inputs: inputs, outputs: outputs} = state) do
     Logger.info("midi cleanup")
-    inputs |> Enum.map(&Blister.Input.stop/1)
-    outputs |> Enum.map(&Blister.Output.close/1)
+    inputs |> Enum.map(&Input.stop/1)
+    outputs |> Enum.map(&Output.stop/1)
     {:noreply, state}
   end
 
