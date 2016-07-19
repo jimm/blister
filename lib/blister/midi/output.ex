@@ -1,6 +1,6 @@
 defmodule Blister.MIDI.Output do
   use GenServer
-  alias Blister.MIDI.IO
+  use Blister.MIDI.IO
 
   defmodule State do
     defstruct [:io]

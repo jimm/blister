@@ -10,7 +10,7 @@ defmodule Blister.MIDI.Input do
 
   def start(name) do
     {:ok, in_pid} = PortMidi.open(:input, name)
-    listener = spawn_link(Blister.Input, :loop, [{nil, nil}])
+    listener = spawn_link(__MODULE__, :loop, [{nil, nil}])
     state = %State{io: %Blister.MIDI.IO{port_pid: in_pid, port_name: name},
                    connections: [],
                    listener: listener}
@@ -18,10 +18,6 @@ defmodule Blister.MIDI.Input do
     send(listener, {:set_state, {in_pid, pid}})
     :ok = PortMidi.listen(in_pid, listener)
     {:ok, pid}
-  end
-
-  def set_display_name(pid, display_name) do
-    GenServer.call(pid, {:set_display_name, display_name})
   end
 
   def add_connection(pid, connection) do

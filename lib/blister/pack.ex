@@ -11,9 +11,9 @@ defmodule Blister.Pack do
     outputs: %{},               # symbol => {display name, output pid}
     all_songs: [],
     song_lists: [],
-    messages: [],
+    messages: %{},              # name => bytes
     message_bindings: %{},
-    triggers: %{},
+    triggers: %{},              # symbol => [{bytes, func}, ...]
     code_bindings: %{},
     use_midi: true,
     gui: nil,
@@ -104,14 +104,5 @@ defmodule Blister.Pack do
   end
 
   def bind_code(_code_key) do
-  end
-
-
-  def input_pid_from_sym(pack, sym) do
-    Map.get(pack.inputs, sym)
-  end
-
-  def output_pid_from_sym(pack, sym) do
-    Map.get(pack.outputs, sym)
   end
 end

@@ -12,7 +12,7 @@ defmodule Blister.MIDI.IO do
   @doc false
   defmacro __using__(_) do
     quote do
-      @behaviour IO
+      @behaviour Blister.MIDI.IO
 
       # ================ API ================
 

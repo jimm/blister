@@ -6,9 +6,9 @@
     {"IAC Driver Bus 1", :ws_out, "WaveStation"},
     {"Foo Port 1", :kz, "K200R"},
     # In this setup, output Foo Port 2 => SuperJupiter => MIDI thru => Drum
-    # machine. Passing in a list of symbols lets me refer to the same output
-    # as both :sj and :drums.
-    {"Foo Port 2", [:sj, :drums], "SuperJupiter + Drums"}
+    # machine.
+    {"Foo Port 2", :sj, "SuperJupiter"},
+    {"Foo Port 2", :drums, "Drums"}
   ],
   messages: [
     {"Tune Request", [C.tune_request]},
