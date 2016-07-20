@@ -4,7 +4,7 @@
 #
 # "list" outputs the list of connected MIDI devices and exits.
 # "text" uses a text-only interface (no curses windows).
-# No argument starts of Blister normally.
+# No argument starts Blister normally.
 
 tmpfile=/tmp/$$.exs
 
