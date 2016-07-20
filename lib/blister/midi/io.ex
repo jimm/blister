@@ -7,11 +7,15 @@ defmodule Blister.MIDI.IO do
   an IO struct.
   """
 
-  defstruct [:port_pid, :port_name, :display_name]
+  defstruct [:port_pid, :port_name]
+
+  @callback port_pid(pid) :: pid
+  @callback port_name(pid) :: String.t
+  @callback stop(pid) :: term
 
   @doc false
   defmacro __using__(_) do
-    quote do
+    quote location: :keep do
       @behaviour Blister.MIDI.IO
 
       # ================ API ================
@@ -20,26 +24,10 @@ defmodule Blister.MIDI.IO do
       def port_pid(pid) when is_pid(pid) do
         GenServer.call(pid, :port_pid)
       end
-      def port_pid(state), do: state.io.port_pid
 
       @doc false
       def port_name(pid) when is_pid(pid) do
         GenServer.call(pid, :port_name)
-      end
-      def port_name(state), do: state.io.port_name
-
-      @doc false
-      def display_name(pid) when is_pid(pid) do
-        GenServer.call(pid, :display_name)
-      end
-      def display_name(state), do: state.io.display_name
-
-      @doc false
-      def set_display_name(pid, name) when is_pid(pid) do
-        GenServer.call(pid, {:set_display_name, name})
-      end
-      def set_display_name(state, name) do
-        %{state | io: %{state.io | display_name: name}}
       end
 
       def stop(pid), do: GenServer.cast(pid, :stop)
@@ -50,16 +38,8 @@ defmodule Blister.MIDI.IO do
         {:reply, state.io.port_pid, state}
       end
 
-      def handle_call(:port_pid, _from, state) do
-        {:reply, state.io.port_pid, state}
-      end
-
-      def handle_call(:port_pid, _from, state) do
-        {:reply, state.io.port_pid, state}
-      end
-
-      def handle_call(:port_pid, _from, state) do
-        {:reply, state.io.port_pid, state}
+      def handle_call(:port_name, _from, state) do
+        {:reply, state.io.port_name, state}
       end
     end
   end

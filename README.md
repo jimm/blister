@@ -42,7 +42,6 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 
 # To Do
 
-- Supervise input and output gen servers
 - Better error messages when loading a file
 - GUI
   - Add to cecho

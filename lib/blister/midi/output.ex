@@ -10,7 +10,7 @@ defmodule Blister.MIDI.Output do
   #
   # See also Blister.MIDI.IO
 
-  def start(name) do
+  def start_link(name) do
     {:ok, out_pid} = PortMidi.open(:output, name)
     GenServer.start_link(__MODULE__,
       %State{io: %Blister.MIDI.IO{port_pid: out_pid, port_name: name}})

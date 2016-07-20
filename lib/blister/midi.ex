@@ -1,26 +1,22 @@
 defmodule Blister.MIDI do
   use GenServer
+  import Supervisor.Spec
   require Logger
-  alias Blister.MIDI.{Input, Output, IO}
+  alias Blister.MIDI.{Input, Output}
 
   # ================ Server ================
 
   def start_link do
     devices = PortMidi.devices
+    output_workers =
+      devices.output |> Enum.map(&(worker(Output, [&1.name])))
+    input_workers =
+      devices.input  |> Enum.map(&(worker(Input, [&1.name])))
+    children = output_workers ++ input_workers
 
-    # Returns a list of {name, pid} tuples
-    outputs = devices.output |> Enum.map(fn d ->
-      {:ok, output} = Output.start(d.name)
-      {d.name, output}
-    end)
+    {:ok, sup} = Supervisor.start_link(children, strategy: :one_for_one)
 
-    # Returns a list of {name, pid} tuples
-    inputs = devices.input |> Enum.map(fn d ->
-      {:ok, input} = Input.start(d.name)
-      {d.name, input}
-    end)
-
-    state = %{inputs: inputs, outputs: outputs}
+    state = %{sup: sup}
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
@@ -60,34 +56,32 @@ defmodule Blister.MIDI do
 
   # ================ Handlers ================
 
-  def handle_call(:inputs, _from, %{inputs: inputs} = state) do
-    {:reply, inputs, state}
+  def handle_call(:inputs, _from, %{sup: sup} = state) do
+    {:reply, child_pids(sup, Input), state}
   end
 
-  def handle_call({:input, name}, _from, %{inputs: inputs} = state) do
-    input_pid = case inputs |> Enum.find(fn {iname, _} -> iname == name end) do
-                  {_, input_pid} -> input_pid
-                  true -> nil
-                end
-    {:reply, input_pid, state}
+  def handle_call({:input, name}, _from, %{sup: sup} = state) do
+    {:reply, child_pid(sup, Input, name), state}
   end
 
-  def handle_call(:outputs, _from, %{outputs: outputs} = state) do
-    {:reply, outputs, state}
+  def handle_call(:outputs, _from, %{sup: sup} = state) do
+    {:reply, child_pids(sup, Output), state}
   end
 
-  def handle_call({:output, name}, _from, %{outputs: outputs} = state) do
-    output_pid = case outputs |> Enum.find(fn {oname, _} -> oname == name end) do
-                   {_, output_pid} -> output_pid
-                   true -> nil
-                 end
-    {:reply, output_pid, state}
+  def handle_call({:output, name}, _from, %{sup: sup} = state) do
+    {:reply, child_pid(sup, Output, name), state}
   end
 
-  def handle_cast(:cleanup, %{inputs: inputs, outputs: outputs} = state) do
+  def handle_cast(:cleanup, %{sup: sup} = state) do
     Logger.info("midi cleanup")
-    inputs |> Enum.map(&Input.stop/1)
-    outputs |> Enum.map(&Output.stop/1)
+
+    {in_kids, out_kids} =
+      Supervisor.which_children(sup)
+      |> Enum.partition(fn {_id, _pid, _type, [module]} -> module == Input end)
+
+    in_kids  |> Enum.each(fn {_id, pid, _type, _modules} ->  Input.stop(pid) end)
+    out_kids |> Enum.each(fn {_id, pid, _type, _modules} -> Output.stop(pid) end)
+
     {:noreply, state}
   end
 
@@ -95,5 +89,26 @@ defmodule Blister.MIDI do
     Logger.info("midi terminate")
     Logger.info("midi reason #{inspect reason}")
     Logger.info("midi state #{inspect state}")
+  end
+
+  # ================ Helpers ================
+
+  defp child_pids(sup, mod) do
+    Supervisor.which_children(sup)
+    |> Enum.filter(fn {_id, _pid, _type, [module]} -> module == mod end)
+    |> Enum.map(fn {_id, pid, _type, _modules} -> pid end)
+  end
+
+  defp child_pid(sup, mod, name) do
+    pids =
+      Supervisor.which_children(sup)
+      |> Enum.filter(fn {_id, pid, _type, [module]} ->
+        module == mod && mod.port_name(pid) == name
+      end)
+      |> Enum.map(fn {_id, pid, _type, _modules} -> pid end)
+    case pids do
+      [h|_] -> h
+      _ -> nil
+    end
   end
 end

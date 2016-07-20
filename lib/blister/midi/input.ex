@@ -8,7 +8,7 @@ defmodule Blister.MIDI.Input do
 
   # ================ Public API ================
 
-  def start(name) do
+  def start_link(name) do
     {:ok, in_pid} = PortMidi.open(:input, name)
     listener = spawn_link(__MODULE__, :loop, [{nil, nil}])
     state = %State{io: %Blister.MIDI.IO{port_pid: in_pid, port_name: name},
