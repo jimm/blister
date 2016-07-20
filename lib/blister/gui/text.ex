@@ -21,7 +21,7 @@ defmodule Blister.GUI.Text do
   def set_commands(chars), do: GenServer.call(__MODULE__, {:set_commands, chars})
 
   def update do
-    IO.puts "Song list names:"
+    IO.puts "Song lists:"
     Pack.song_lists |> Enum.map(&(IO.puts "  #{&1.name}"))
 
     sl = Pack.song_list || %Blister.SongList{}

@@ -26,9 +26,9 @@ defmodule Blister.DSL do
     all_songs = parse_songs(setup.songs, inputs, outputs, [])
     %Pack{inputs: inputs,
           outputs: outputs,
-          messages: parse_messages(setup.messages, []),
+          messages: parse_messages(setup.messages, %{}),
           message_bindings: parse_message_keys(setup.message_keys, %{}),
-          triggers: parse_triggers(setup.triggers, []),
+          triggers: parse_triggers(setup.triggers, %{}),
           all_songs: all_songs,
           song_lists: parse_song_lists(setup.song_lists, all_songs, [])}
   end
@@ -123,6 +123,9 @@ defmodule Blister.DSL do
                 pc_prog: get_any(c, [:pc, :prog, :program])}
   end
 
+  def parse_connection_io(nil, _, _) do
+    {nil, nil, nil, nil}
+  end
   def parse_connection_io({in_sym, out_sym, out_chan}, inputs, outputs) do
     parse_connection_io({in_sym, nil, out_sym, out_chan}, inputs, outputs)
   end

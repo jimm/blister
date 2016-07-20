@@ -43,10 +43,12 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 # To Do
 
 - Supervise input and output gen servers
-- Add to cecho
-  - wnoutrefresh
-  - doupdate
-  - window movement
-  - wresize?
-- Use window movement in window.ex when resized
-- Resize (supported by cecho? if not, add)
+- Better error messages when loading a file
+- GUI
+  - Add to cecho
+    - wnoutrefresh
+    - doupdate
+    - window movement
+    - wresize?
+  - Use window movement in window.ex when resized
+  - Resize (supported by cecho? if not, add)
