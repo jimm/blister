@@ -1,9 +1,18 @@
 #!/bin/bash
+#
+# usage: blister [list | text keys...]
+#
+# "list" outputs the list of connected MIDI devices and exits.
+# "text" uses a text-only interface (no curses windows).
+# No argument starts of Blister normally.
 
 tmpfile=/tmp/$$.exs
 
 cd $(dirname $0)/.. >/dev/null
 touch $tmpfile
-# elixir --erl -noinput --erl +A10 -S mix run $tmpfile $*
-elixir -S mix run $tmpfile $*
+if [ -z "$1" ] ; then
+    elixir --erl -noinput --erl +A10 -S mix run --no-halt
+else
+    elixir -S mix run --no-halt $tmpfile $*
+fi
 rm -f $tmpfile
