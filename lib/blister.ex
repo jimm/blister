@@ -23,7 +23,10 @@ defmodule Blister do
     do_run(Blister.GUI.Text, fn -> Blister.GUI.Text.set_commands(commands |> to_char_list) end)
   end
   defp run([]) do
-    do_run(Blister.GIU.Curses)
+    do_run(Blister.GUI.Curses)
+  end
+  defp run(["test"]) do
+    do_run(nil)
   end
 
   defp do_run(gui_module, gui_config_func \\ nil) do
@@ -33,9 +36,11 @@ defmodule Blister do
       gui_config_func.()
     end
     Logger.debug("supervisor started result = #{inspect result}, calling start_command_loop")
-    Blister.Controller.start_command_loop
-    receive do
-      :quit -> :ok              # never received, but keeps app running
+    if gui_module do
+      Blister.Controller.start_command_loop
+      receive do
+        :quit -> :ok            # never received, but keeps app running
+      end
     end
     result
   end

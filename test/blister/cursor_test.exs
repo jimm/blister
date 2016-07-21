@@ -4,7 +4,7 @@ defmodule Blister.CursorTest do
   alias Blister.Cursor
 
   test "handles nils" do
-    c = %Cursor{} |> Cursor.init
+    c = %Cursor{} |> Cursor.init(%{song_lists: []})
     assert c.song_list == nil
     assert c.song == nil
     assert c.patch == nil

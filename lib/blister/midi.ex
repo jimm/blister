@@ -87,8 +87,7 @@ defmodule Blister.MIDI do
 
   def terminate(reason, state) do
     Logger.info("midi terminate")
-    Logger.info("midi reason #{inspect reason}")
-    Logger.info("midi state #{inspect state}")
+    if state != :shutdown, do: Logger.info("midi reason #{inspect reason}")
   end
 
   # ================ Helpers ================

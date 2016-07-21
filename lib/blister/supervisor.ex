@@ -6,6 +6,12 @@ defmodule Blister.Supervisor do
     Supervisor.start_link(__MODULE__, gui_module, name: :blister_supervisor)
   end
 
+  def init(nil) do
+    children = [
+      worker(Pack, []),
+    ]
+    supervise(children, strategy: :one_for_one)
+  end
   def init(gui_module) do
     children = [
       worker(Pack, []),

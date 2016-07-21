@@ -20,12 +20,11 @@ defmodule Blister.Cursor do
 
   # TODO call this every time we add a new song or patch
   def init(cursor, pack) do
-    song_list_index = 0
     song_list = first_of(pack.song_lists)
     song = first_of(song_list)
     patch = if song, do: first_of(song.patches)
     %{cursor |
-      song_list_index: song_list_index, song_list: song_list,
+      song_list_index: 0, song_list: song_list,
       song_index: 0, song: song,
       patch_index: 0, patch: patch}
   end
