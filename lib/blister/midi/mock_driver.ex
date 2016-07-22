@@ -1,60 +1,100 @@
 defmodule Blister.MIDI.MockDriver do
 
+  require Logger
+
+  # TODO save input and output messages so tests can inspect them
+
   # ================ API ================
 
   def start_link do
-    state = %{inputs: [%{name: "input 1", listeners: []}],
-              outputs: [%{name: "input 2", listeners: []}]}
+    state = %{input: [%{name: "input 1"}],
+              output: [%{name: "input 2"}],
+              listeners: %{}}
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
-  def devices, do: GenServer.call(__MODULE__, :devices)
+  def init(state) do
+    {:ok, state}
+  end
 
-  def open(:input, name), do: GenServer.call(__MODULE__, {:open, :input, name})
+  def devices do
+    GenServer.call(__MODULE__, :devices)
+  end
 
-  def open(:output, name), do: GenServer.call(__MODULE__, {:open, :output, name})
+  def open(:input, name) do
+    GenServer.call(__MODULE__, {:open, :input, name})
+  end
 
-  def close(:input, name), do: GenServer.call(__MODULE__, {:close, :input, name})
+  def open(:output, name) do
+    GenServer.call(__MODULE__, {:open, :output, name})
+  end
 
-  def close(:output, name), do: GenServer.call(__MODULE__, {:close, :output, name})
+  def close(:input, pid) do
+    GenServer.call(__MODULE__, {:close, :input, pid})
+  end
 
-  def listen(in_pid, listener), do: GenServer.call(__MODULE__, {:listen, in_pid, listener})
+  def close(:output, pid) do
+    GenServer.call(__MODULE__, {:close, :output, pid})
+  end
 
-  def write(out_pid, messages), do: GenServer.call(__MODULE__, {:write, out_pid, messages})
+  def listen(in_pid, listener) do
+    GenServer.call(__MODULE__, {:listen, in_pid, listener})
+  end
+
+  def write(out_pid, messages) do
+    GenServer.call(__MODULE__, {:write, out_pid, messages})
+  end
 
   @doc "Used for testing. Sends messages to in_pid."
-  def input(in_pid, messages), do: GenServer.call(__MODULE__, {:input, in_pid, messages})
+  def input(in_pid, messages) do
+    GenServer.call(__MODULE__, {:input, in_pid, messages})
+  end
 
   # ================ Handlers ================
+
   def handle_call(:devices, _from, state) do
-    {:ok, state, state}
+    {:reply, state, state}
   end
 
   def handle_call({:open, :input, name}, _from, state) do
-    {:ok, state, state}
+    {:reply, {:ok, make_ref}, state}
   end
 
   def handle_call({:open, :output, name}, _from, state) do
-    {:ok, state, state}
+    {:reply, {:ok, make_ref}, state}
   end
 
-  def handle_call({:close, :input, name}, _from, state) do
-    {:ok, state, state}
+  def handle_call({:close, :input, _pid}, _from, state) do
+    {:reply, :ok, state}
   end
 
-  def handle_call({:close, :output, name}, _from, state) do
-    {:ok, state, state}
+  def handle_call({:close, :output, _pid}, _from, state) do
+    {:reply, :ok, state}
   end
 
   def handle_call({:listen, in_pid, listener}, _from, state) do
-    {:ok, state, state}
+    listeners =
+      state.listeners
+      |> Map.update(in_pid, [], fn ls -> [listener|ls] end)
+    {:reply, :ok, %{state | listeners: listeners}}
   end
 
   def handle_call({:write, in_pid, messages}, _from, state) do
-    {:ok, state, state}
+    {:reply, :ok, state}
   end
 
-  def handle_call({:input, :in_pid, messages}, _from, state) do
-    {:ok, state, state}
+  @doc "Send `messages` to all listeners of `in_pid`."
+  def handle_call({:input, in_pid, messages}, _from, state) do
+    state.listeners
+    |> Map.get(in_pid, [])
+    |> Enum.each(fn listener ->
+      send(listener, {in_pid, messages})
+    end)
+    {:reply, :ok, state}
+  end
+
+  def terminate(reason, state) do
+    Logger.info("mock driver terminate")
+    if state != :shutdown, do: Logger.info("mock driver reason #{inspect reason}")
   end
 end

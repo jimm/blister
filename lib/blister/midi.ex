@@ -9,9 +9,9 @@ defmodule Blister.MIDI do
   def start_link(driver_module) do
     devices = driver_module.devices
     input_workers =
-      inputs  |> Enum.map(&(worker(Input, [driver_module, &1.name])))
+      devices.input  |> Enum.map(&(worker(Input, [driver_module, &1.name])))
     output_workers =
-      outputs |> Enum.map(&(worker(Output, [driver_module, &1.name])))
+      devices.output |> Enum.map(&(worker(Output, [driver_module, &1.name])))
     children = input_workers ++ output_workers
 
     {:ok, sup} = Supervisor.start_link(children, strategy: :one_for_one)
