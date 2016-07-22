@@ -41,7 +41,7 @@ defmodule Blister.GUI.Text do
 
   def getch, do: GenServer.call(__MODULE__, :getch)
 
-  def prompt(title, _prompt, default) do
+  def prompt(title, prompt, default) do
     Logger.debug "prompt"
     gets_prompt = title <> case default do
                              nil -> ""

@@ -8,15 +8,16 @@ defmodule Blister.MIDI.Input do
 
   # ================ Public API ================
 
-  def start_link(name) do
-    {:ok, in_pid} = PortMidi.open(:input, name)
+  def start_link(driver, name) do
+    {:ok, in_pid} = driver.open(:input, name)
     listener = spawn_link(__MODULE__, :loop, [{nil, nil}])
-    state = %State{io: %Blister.MIDI.IO{port_pid: in_pid, port_name: name},
+    state = %State{io: %Blister.MIDI.IO{driver: driver, port_pid: in_pid,
+                                        port_name: name},
                    connections: [],
                    listener: listener}
     {:ok, pid} = GenServer.start_link(__MODULE__, state)
     send(listener, {:set_state, {in_pid, pid}})
-    :ok = PortMidi.listen(in_pid, listener)
+    :ok = driver.listen(in_pid, listener)
     {:ok, pid}
   end
 
@@ -45,7 +46,7 @@ defmodule Blister.MIDI.Input do
 
   def handle_cast(:stop, state) do
     send(state.listener, :stop)
-    :ok = PortMidi.close(:input, state.io.port_pid)
+    :ok = state.io.driver.close(:input, state.io.port_pid)
     {:stop, :normal, nil}
   end
 

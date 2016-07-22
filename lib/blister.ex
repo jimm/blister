@@ -1,6 +1,8 @@
 defmodule Blister do
   use Application
   require Logger
+  alias Blister.MIDI
+  alias Blister.GUI.{Text, Curses}
 
   def start(_type, _args) do
     run(System.argv)
@@ -16,22 +18,23 @@ defmodule Blister do
     :init.stop
     {:ok, self}
   end
-  defp run(["text"]) do
-    do_run(Blister.GUI.Text)
-  end
-  defp run(["text", commands]) do
-    do_run(Blister.GUI.Text, fn -> Blister.GUI.Text.set_commands(commands |> to_char_list) end)
+  defp run([commands]) do
+    do_run(fn -> Text.set_commands(commands |> to_char_list) end)
   end
   defp run([]) do
-    do_run(Blister.GUI.Curses)
+    do_run
   end
   defp run(["test"]) do
-    do_run(nil)
+    do_run()
   end
 
-  defp do_run(gui_module, gui_config_func \\ nil) do
+  defp do_run(gui_config_func \\ nil) do
     Logger.info("starting supervisor")
-    result = Blister.Supervisor.start_link(gui_module)
+
+    driver_module = Application.fetch_env!(:blister, :midi_driver_module)
+    gui_module = Application.fetch_env!(:blister, :gui_module)
+    result = Blister.Supervisor.start_link(driver_module, gui_module)
+
     if gui_config_func do
       gui_config_func.()
     end

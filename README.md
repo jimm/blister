@@ -42,7 +42,7 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 
 # To Do
 
-- Better error messages when loading a file
+- Use config files to configure GUI and MIDI modules
 - GUI
   - Add to cecho
     - wnoutrefresh

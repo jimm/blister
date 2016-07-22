@@ -15,7 +15,7 @@ defmodule Blister.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [applications: [:logger, :portmidi],
-     mod: {Blister, []}]
+     mod: (if Mix.env == :test, do: [], else: {Blister, []})]
   end
 
   defp deps do

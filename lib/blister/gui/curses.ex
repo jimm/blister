@@ -63,7 +63,7 @@ defmodule Blister.GUI.Curses do
     :cecho.getch
   end
 
-  def prompt(prompt) do
+  def prompt(title, prompt, default \\ nil) do
     # TODO use PromptWindow
     pwin = Window
     # return {:ok, file} or nil

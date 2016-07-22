@@ -7,7 +7,7 @@ defmodule Blister.MIDI.IO do
   an IO struct.
   """
 
-  defstruct [:port_pid, :port_name]
+  defstruct [:driver, :port_pid, :port_name]
 
   @callback port_pid(pid) :: pid
   @callback port_name(pid) :: String.t

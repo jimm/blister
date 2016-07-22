@@ -6,13 +6,13 @@ defmodule Blister.MIDI do
 
   # ================ Server ================
 
-  def start_link do
-    devices = PortMidi.devices
-    output_workers =
-      devices.output |> Enum.map(&(worker(Output, [&1.name])))
+  def start_link(driver_module) do
+    devices = driver_module.devices
     input_workers =
-      devices.input  |> Enum.map(&(worker(Input, [&1.name])))
-    children = output_workers ++ input_workers
+      inputs  |> Enum.map(&(worker(Input, [driver_module, &1.name])))
+    output_workers =
+      outputs |> Enum.map(&(worker(Output, [driver_module, &1.name])))
+    children = input_workers ++ output_workers
 
     {:ok, sup} = Supervisor.start_link(children, strategy: :one_for_one)
 
@@ -56,31 +56,29 @@ defmodule Blister.MIDI do
 
   # ================ Handlers ================
 
-  def handle_call(:inputs, _from, %{sup: sup} = state) do
-    {:reply, child_pids(sup, Input), state}
+  def handle_call(:inputs, _from, state) do
+    {:reply, child_pids(state.sup, Input), state}
   end
 
-  def handle_call({:input, name}, _from, %{sup: sup} = state) do
-    {:reply, child_pid(sup, Input, name), state}
+  def handle_call({:input, name}, _from, state) do
+    {:reply, child_pid(state.sup, Input, name), state}
   end
 
-  def handle_call(:outputs, _from, %{sup: sup} = state) do
-    {:reply, child_pids(sup, Output), state}
+  def handle_call(:outputs, _from, state) do
+    {:reply, child_pids(state.sup, Output), state}
   end
 
-  def handle_call({:output, name}, _from, %{sup: sup} = state) do
-    {:reply, child_pid(sup, Output, name), state}
+  def handle_call({:output, name}, _from, state) do
+    {:reply, child_pid(state.sup, Output, name), state}
   end
 
-  def handle_cast(:cleanup, %{sup: sup} = state) do
+  def handle_cast(:cleanup, state) do
     Logger.info("midi cleanup")
 
-    {in_kids, out_kids} =
-      Supervisor.which_children(sup)
-      |> Enum.partition(fn {_id, _pid, _type, [module]} -> module == Input end)
-
-    in_kids  |> Enum.each(fn {_id, pid, _type, _modules} ->  Input.stop(pid) end)
-    out_kids |> Enum.each(fn {_id, pid, _type, _modules} -> Output.stop(pid) end)
+    Supervisor.which_children(state.sup)
+    |> Enum.each(fn {_id, pid, _type, [module]} ->
+      module.stop(pid)
+    end)
 
     {:noreply, state}
   end
