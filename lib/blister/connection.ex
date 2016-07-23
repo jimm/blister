@@ -41,8 +41,8 @@ defmodule Blister.Connection do
     midi_out(conn, messages)
   end
 
-  def stop(conn, stop_bytes \\ []) do
-    midi_out(conn, stop_bytes)
+  def stop(conn, stop_messages \\ []) do
+    midi_out(conn, stop_messages)
     Input.remove_connection(conn.input_pid, conn)
   end
 

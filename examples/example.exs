@@ -16,10 +16,8 @@
       |> Enum.map(fn chan -> [C.controller + chan, C.cc_volume, 127] end)
       |> List.flatten}
   ],
-  message_keys: [
-    {:f1, "Tune Request"},
-    {:f2, "Full Volume"}
-  ],
+  message_keys: %{f1: "Tune Request",
+                  f2: "Full Volume"},
   triggers: [
     {:mb, [C.controller, C.cc_gen_purpose_5, 127], &Pack.next_patch/0},
     {:mb, [C.controller, C.cc_gen_purpose_6, 127], &Pack.prev_patch/0},

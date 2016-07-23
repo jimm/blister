@@ -7,8 +7,8 @@ defmodule Blister.MIDI.MockDriver do
   # ================ API ================
 
   def start_link do
-    state = %{input: [%{name: "input 1"}],
-              output: [%{name: "input 2"}],
+    state = %{input: [%{name: "input 1"}, %{name: "input 2"}],
+              output: [%{name: "output 1"}, %{name: "output 2"}],
               listeners: %{}}
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
@@ -56,11 +56,11 @@ defmodule Blister.MIDI.MockDriver do
     {:reply, state, state}
   end
 
-  def handle_call({:open, :input, name}, _from, state) do
+  def handle_call({:open, :input, _name}, _from, state) do
     {:reply, {:ok, make_ref}, state}
   end
 
-  def handle_call({:open, :output, name}, _from, state) do
+  def handle_call({:open, :output, _namename}, _from, state) do
     {:reply, {:ok, make_ref}, state}
   end
 
@@ -79,7 +79,8 @@ defmodule Blister.MIDI.MockDriver do
     {:reply, :ok, %{state | listeners: listeners}}
   end
 
-  def handle_call({:write, in_pid, messages}, _from, state) do
+  def handle_call({:write, _in_pid, _messages}, _from, state) do
+    # TODO remember what was written so tests can inspect
     {:reply, :ok, state}
   end
 

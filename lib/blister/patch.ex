@@ -1,8 +1,8 @@
 defmodule Blister.Patch do
   defstruct name: "Unnamed",
     connections: [],
-    start_bytes: [],
-    stop_bytes: [],
+    start_messages: [],
+    stop_messages: [],
     running: false
 
   alias Blister.Connection
@@ -16,7 +16,7 @@ defmodule Blister.Patch do
     # already running
   end
   def start(patch) do
-    patch.connections |> Enum.map(&Connection.start(&1, patch.start_bytes))
+    patch.connections |> Enum.map(&Connection.start(&1, patch.start_messages))
   end
 
   def stop(nil), do: nil
@@ -24,6 +24,6 @@ defmodule Blister.Patch do
     # not running
   end
   def stop(patch) do
-    patch.connections |> Enum.map(&Connection.stop(&1, patch.stop_bytes))
+    patch.connections |> Enum.map(&Connection.stop(&1, patch.stop_messages))
   end
 end

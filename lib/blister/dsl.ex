@@ -31,7 +31,7 @@ defmodule Blister.DSL do
          {:ok, outputs} <- parse_outputs(Map.get(setup, :outputs, []), %{}),
          {:ok, all_songs} <- parse_songs(Map.get(setup, :songs, []), inputs, outputs, []),
          {:ok, messages} <- parse_messages(Map.get(setup, :messages, []), %{}),
-         {:ok, message_bindings} <- parse_message_keys(Map.get(setup, :message_keys, []), %{}),
+         {:ok, message_bindings} <- parse_message_bindings(Map.get(setup, :message_keys, %{})),
          {:ok, triggers} <- parse_triggers(Map.get(setup, :triggers, []), %{}),
          {:ok, song_lists} <- parse_song_lists(Map.get(setup, :song_lists, []), all_songs, []),
     do: %Pack{inputs: inputs,
@@ -53,29 +53,37 @@ defmodule Blister.DSL do
   end
 
   defp parse_outputs([], outputs), do: {:ok, outputs}
+  defp parse_outputs([{port, sym}|t], outputs) do
+    parse_outputs([{port, sym, port}|t], outputs)
+  end
   defp parse_outputs([{port, sym, name}|t], outputs) do
     out_pid = MIDI.output(port)
     parse_outputs(t, outputs |> Map.put(sym, {name, out_pid}))
   end
 
-
   defp parse_messages([], messages), do: {:ok, messages}
   defp parse_messages([msg|t], messages) do
-    {name, bytes} = msg
-    parse_messages(t, messages |> Map.put(name, bytes))
-  end
-
-  defp parse_message_keys([], message_keys), do: {:ok, message_keys}
-  defp parse_message_keys([msgkey|t], message_keys) do
-    {key, name} = msgkey
-    parse_message_keys(t, message_keys |> Map.put(key, name))
+    {name, msg_msgs} = msg
+    msg_msgs =
+      (if is_tuple(msg_msgs), do: [msg_msgs], else: msg_msgs)
+      |> Enum.map(&normalize_message(&1))
+    parse_messages(t, messages |> Map.put(name, msg_msgs))
   end
 
   defp parse_triggers([], triggers), do: {:ok, triggers}
   defp parse_triggers([trig|t], triggers) do
-    {sym, bytes, func} = trig
+    {sym, message, func} = trig
+    norm_msg = normalize_message(message)
     existing = triggers |> Map.get(sym, [])
-    parse_triggers(t, triggers |> Map.put(sym, [{bytes, func} | existing]))
+    parse_triggers(t,
+      triggers
+      |> Map.put(sym, [{norm_msg, func} | existing]))
+  end
+
+  defp parse_message_bindings(nil), do: {:ok, %{}}
+  defp parse_message_bindings(mbs) when is_map(mbs), do: {:ok, mbs}
+  defp parse_triggers(_) do
+    {:error, "message_keys must be a map"}
   end
 
   defp parse_songs([], _, _, songs), do: {:ok, Enum.reverse(songs)}
@@ -106,8 +114,8 @@ defmodule Blister.DSL do
     do
       patch = %Patch{name: p.name,
                      connections: conns,
-                     start_bytes: Map.get(p, :start_bytes),
-                     stop_bytes: Map.get(p, :stop_bytes)}
+                     start_messages: get_any(p, [:start_messages, :start_msgs, :start]),
+                     stop_messages: get_any(p, [:stop_messages, :stop_msgs, :stop])}
       parse_patches(t, inputs, outputs, [patch | patches])
     end
   end
@@ -131,7 +139,7 @@ defmodule Blister.DSL do
                      xpose: get_any(c, [:transpose, :xpose]),
                      bank_msb: bank_msb,
                      bank_lsb: bank_lsb,
-                     pc_prog: get_any(c, [:pc, :prog, :program])}}
+                     pc_prog: get_any(c, [:pc, :prog, :prog_chg, :program])}}
   end
 
   defp parse_connection_io(nil, _, _) do
@@ -166,4 +174,8 @@ defmodule Blister.DSL do
   defp get_any(m, keys, default \\ nil) do
     Enum.find_value(keys, fn k -> Map.get(m, k) end) || default
   end
+
+  defp normalize_message({b0}), do: {b0, 0, 0}
+  defp normalize_message({b0, b1}), do: {b0, b1, 0}
+  defp normalize_message({_, _, _} = msg), do: msg
 end
