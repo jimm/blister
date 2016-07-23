@@ -42,8 +42,9 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 
 # To Do
 
-- Use config files to configure GUI and MIDI modules
-- GUI
+- Better names for IO, at least in config files
+- App needs to accept file name to read on start
+- Curses GUI
   - Add to cecho
     - wnoutrefresh
     - doupdate

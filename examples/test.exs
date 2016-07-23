@@ -34,14 +34,15 @@
       """,
       patches: [
         %{name: "First Song, First Patch",
-          start_message: [{C.tune_request}],
+          start_messages: [{C.tune_request}],
           connections: [
             %{io: {:mb, :sj, 2},
               prog_chg: 64, zone: (64..75), transpose: 12},
-            %{io: {:mb, :drums, 10},
-              pc: 64, zone: (64..75), xpose: 12},
+            %{io: {:mb, 10, :drums, 10},
+              bank: {1, 23}, prog_chg: 2, zone: (64..75), xpose: 12},
             %{io: {:ws_in, :ws_out, 4},
-              program: 100, zone: (64..75), filter: fn _conn, {b0, b1, b2} = msg ->
+              bank_msb: 2, program: 100,
+              filter: fn _conn, {b0, b1, b2} = msg ->
                 if P.note_off?(msg) do
                   {b0, b1, max(0, b2-1)} # decrease velocity by 1
                 else
@@ -60,8 +61,8 @@
             %{io: {:mb, :sj, 4}, prog_chg: 22, zone: (76..127)},
             %{io: {:ws_in, :ws_out, 6},zone: (64..75),
               filter: fn _conn, msg -> msg end} # no-op
-          ]}]},
-    %{name: "Second Song, Second Patch"}],
+          ]},
+        %{name: "Second Song, Second Patch"}]}],
   song_lists: [
     %{name: "Tonight's Song List",
       songs: [

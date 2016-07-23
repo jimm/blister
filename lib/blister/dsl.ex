@@ -109,21 +109,30 @@ defmodule Blister.DSL do
 
   defp parse_patches([], _, _, patches), do: {:ok, Enum.reverse(patches)}
   defp parse_patches([p|t], inputs, outputs, patches) do
-    with {:ok, conns} <- get_any(p, [:connections, :conns], [])
-                         |> parse_connections(inputs, outputs, [])
+    with {:ok, conns} <- (get_any(p, [:connections, :conns], [])
+                         |> parse_connections(inputs, outputs, []))
     do
+      start_msgs = case get_any(p, [:start_messages, :start_msgs, :start]) do
+                     nil -> []
+                     ms when is_list(ms) -> ms |> Enum.map(&normalize_message/1)
+                   end
+      stop_msgs = case get_any(p, [:stop_messages, :stop_msgs, :stop]) do
+                    nil -> []
+                    ms when is_list(ms) -> ms |> Enum.map(&normalize_message/1)
+                  end
       patch = %Patch{name: p.name,
                      connections: conns,
-                     start_messages: get_any(p, [:start_messages, :start_msgs, :start]),
-                     stop_messages: get_any(p, [:stop_messages, :stop_msgs, :stop])}
+                     start_messages: start_msgs,
+                     stop_messages: stop_msgs}
       parse_patches(t, inputs, outputs, [patch | patches])
     end
   end
 
-  defp parse_connections([], _, _, conns), do: {:ok, conns}
+  defp parse_connections([], _, _, conns), do: {:ok, Enum.reverse(conns)}
   defp parse_connections([c|t], inputs, outputs, conns) do
-    parse_connections(t, inputs, outputs,
-      [parse_connection(c, inputs, outputs) | conns])
+    with {:ok, conn} <- parse_connection(c, inputs, outputs) do
+      parse_connections(t, inputs, outputs, [conn | conns])
+    end
   end
 
   defp parse_connection(c, inputs, outputs) do
