@@ -54,6 +54,9 @@ defmodule Blister.Connection do
   Note that running status bytes are not handled, but PortMidi doesn't seem
   to use them anyway.
   """
+  def midi_in(conn, messages) when is_tuple(messages) do
+    midi_in(conn, [messages])
+  end
   def midi_in(conn, messages) do
     messages
     |> Stream.map(&remove_timestamp/1)

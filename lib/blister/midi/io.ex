@@ -14,7 +14,7 @@ defmodule Blister.MIDI.IO do
   @callback stop(pid) :: term
 
   @doc false
-  defmacro __using__(_) do
+  defmacro __using__(type: type) do
     quote location: :keep do
       @behaviour Blister.MIDI.IO
 
@@ -31,6 +31,10 @@ defmodule Blister.MIDI.IO do
       end
 
       def stop(pid), do: GenServer.cast(pid, :stop)
+
+      def close(state) do
+        state.io.driver.close(unquote(type), state.io.port_pid)
+      end
 
       # ================ handlers ================
 

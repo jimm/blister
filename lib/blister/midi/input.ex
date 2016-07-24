@@ -1,6 +1,7 @@
 defmodule Blister.MIDI.Input do
   use GenServer
-  use Blister.MIDI.IO
+  use Blister.MIDI.IO, type: :input
+  require Logger
 
   defmodule State do
     defstruct [:io, :connections, :listener]
@@ -22,31 +23,40 @@ defmodule Blister.MIDI.Input do
   end
 
   def add_connection(pid, connection) do
-    GenServer.cast(pid, {:add_connection, connection})
+    GenServer.call(pid, {:add_connection, connection})
   end
 
   def remove_connection(pid, connection) do
-    GenServer.cast(pid, {:remove_connection, connection})
+    GenServer.call(pid, {:remove_connection, connection})
   end
 
   @doc "Used internally to process incoming MIDI messages."
   def receive_messages(pid, messages) do
-    GenServer.cast(pid, {:messages, messages})
+    Logger.debug "input received messages #{inspect messages}" # DEBUG
+    GenServer.call(pid, {:messages, messages})
   end
 
   # ================ GenServer ================
 
-  def handle_cast({:messages, []}, state) do
-    {:noreply, state}
+  def handle_call({:add_connection, conn}, _from, state) do
+    {:reply, :ok, %{state | connections: [conn|state.connections]}}
   end
-  def handle_cast({:messages, messages}, state) do
+
+  def handle_call({:remove_connection, conn}, _from, state) do
+    {:reply, :ok, %{state | connections: List.delete(state.connections, conn)}}
+  end
+
+  def handle_call({:messages, []}, _from, state) do
+    {:reply, :ok, state}
+  end
+  def handle_call({:messages, messages}, _from, state) do
     state.connections |> Enum.map(&(Blister.Connection.midi_in(&1, messages)))
-    {:noreply, state}
+    {:reply, :ok, state}
   end
 
   def handle_cast(:stop, state) do
     send(state.listener, :stop)
-    :ok = state.io.driver.close(:input, state.io.port_pid)
+    :ok = close(state)
     {:stop, :normal, nil}
   end
 

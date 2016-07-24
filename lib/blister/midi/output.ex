@@ -1,6 +1,6 @@
 defmodule Blister.MIDI.Output do
   use GenServer
-  use Blister.MIDI.IO
+  use Blister.MIDI.IO, type: :output
 
   defmodule State do
     defstruct [:io]
@@ -23,11 +23,11 @@ defmodule Blister.MIDI.Output do
 
   def handle_cast({:write, messages}, state) do
     state.io.driver.write(state.io.port_pid, messages)
+    {:noreply, state}
   end
 
   def handle_cast(:stop, state) do
-    send(state.listener, :stop)
-    :ok = state.io.driver.close(:output, state.io.port_pid)
+    :ok = close(state)
     {:stop, :normal, nil}
   end
 end
