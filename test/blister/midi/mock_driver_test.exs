@@ -36,12 +36,15 @@ defmodule Blister.MIDI.MockDriverTest do
     receive_or_flunk(inp, [{4, 5, 6}, {7, 0, 0}])
   end
 
-  defp receive_or_flunk(inp, expected) do
+  defp receive_or_flunk(inp, msgs) do
     receive do
-      {^inp, ^expected} -> :ok
-      msg -> flunk("received #{inspect msg} instead of expected message(s) #{inspect expected}")
+      {^inp, ^msgs} ->
+        :ok
+      msg ->
+        flunk("received #{inspect msg}; expected message(s) #{inspect msgs}")
     after
-      1000 -> flunk("error: did not receive expected message(s) #{inspect expected}")
+      1000 ->
+        flunk("error: did not receive expected message(s) #{inspect msgs}")
     end
   end
 end

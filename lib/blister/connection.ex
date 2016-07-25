@@ -17,6 +17,7 @@ defmodule Blister.Connection do
   alias Blister.Predicates, as: P
 
   def start(conn, start_messages \\ []) do
+    Input.add_connection(conn.input_pid, conn)
     messages = start_messages
     messages = if conn.pc_prog do
       [{C.program_change + conn.output_chan, conn.pc_prog} | messages]
@@ -37,7 +38,6 @@ defmodule Blister.Connection do
     else
       messages
     end
-    Input.add_connection(conn.input_pid, conn)
     midi_out(conn, messages)
   end
 
