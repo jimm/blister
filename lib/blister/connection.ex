@@ -8,8 +8,12 @@ defmodule Blister.Connection do
   `output`.
   """
 
-  defstruct [:input_pid, :input_chan, :output_pid, :output_chan, :filter,
-             :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
+  defmodule IO do
+    defstruct [:sym, :pid, :chan]
+  end
+
+  defstruct [:input, :output,   # IO structs
+             :filter, :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
 
   use Bitwise
   alias Blister.MIDI.{Input, Output}
@@ -17,10 +21,10 @@ defmodule Blister.Connection do
   alias Blister.Predicates, as: P
 
   def start(conn, start_messages \\ []) do
-    Input.add_connection(conn.input_pid, conn)
+    Input.add_connection(conn.input.pid, conn)
     messages = start_messages
     messages = if conn.pc_prog do
-      [{C.program_change + conn.output_chan, conn.pc_prog} | messages]
+      [{C.program_change + conn.output.chan, conn.pc_prog} | messages]
     else
       messages
     end
@@ -43,7 +47,7 @@ defmodule Blister.Connection do
 
   def stop(conn, stop_messages \\ []) do
     midi_out(conn, stop_messages)
-    Input.remove_connection(conn.input_pid, conn)
+    Input.remove_connection(conn.input.pid, conn)
   end
 
   @doc """
@@ -59,37 +63,53 @@ defmodule Blister.Connection do
   end
   def midi_in(conn, messages) do
     messages
-    |> Stream.map(&remove_timestamp/1)
-    |> Stream.filter(&accept_from_input?(conn, &1))
-    |> Stream.map(&munge(conn, &1))
+    |> Enum.map(&process(conn, &1))
     |> Enum.map(&midi_out(conn, &1))
   end
 
-  def remove_timestamp({{_, _, _}, t} = msg) when is_integer(t), do: msg
-  def remove_timestamp({_, _, _} = msg), do: msg
+  @doc """
+  Takes `messages`, removes timestamps, filters out messages that don't
+  qualify (wrong channel or out of zone, for example), then munges them by
+  transposing, running through filter func, etc.
 
-  def accept_from_input?(conn, message) do
+  This is only public so we can test it.
+  """
+  def process(conn, messages) do
+    messages
+    |> Enum.map(&remove_timestamp/1)
+    |> Enum.filter(&accept_from_input?(conn, &1))
+    |> Enum.map(&munge(conn, &1))
+  end
+
+  defp remove_timestamp({{_, _, _}, t} = msg) when is_integer(t), do: msg
+  defp remove_timestamp({_, _, _} = msg), do: msg
+
+  defp accept_from_input?(conn, message) do
     cond do
-      conn.input_chan == nil -> true
+      conn.input.chan == nil -> true
       !P.channel?(message) -> true
-      true -> P.note?(message) && P.channel(message) == conn.input_chan
+      P.note?({_, note, _} = message) ->
+        P.channel(message) == conn.input.chan && inside_zone?(conn, note)
+      true -> 
     end
   end
 
   # Returns true if the zone is nil (allowing all notes through) or if
   # zone is a Range and `note` is inside the zone.
-  def inside_zone?(conn, note) do
+  defp inside_zone?(conn, note) do
     conn.zone == nil || Enum.member?(conn.zone, note)
   end
 
   # Convert a single message into whatever we want to send. Return nil if
   # nothing should be sent.
+  #
+  # First transpose is applied, then filter function
   defp munge(conn, {status, _, _} = message) do
     msg = cond do
-      P.note?(status) ->
+      P.note?(message) ->
         # note off, note on, poly pressure
         munge_note(conn, message)
-      P.channel?(status) ->
+      P.channel?(message) ->
         # controller, program change, channel pressure, pitch bend
         munge_chan_message(conn, message)
       true ->
@@ -104,28 +124,21 @@ defmodule Blister.Connection do
   end
 
   defp munge_note(conn, {status, note, val}) do
-    if inside_zone?(conn, note) do
-      note = if conn.xpose, do: note + conn.xpose, else: note
-      if note >= 0 && note <= 127 do
-        status = (status &&& 0xf0) + conn.output_chan
-        {status, note, val}
-      else
-        nil
-      end
-    else
-      nil
-    end
+    munge_chan_message(conn, {status, xpose(conn.xpose, note), val})
   end
 
+  defp xpose(nil, note), do: note
+  defp xpose(xpose, note), do: min(127, max(0, note + xpose))
+
   defp munge_chan_message(conn, {status, b1, b2}) do
-    status = (status &&& 0xf0) + conn.output_chan
+    status = (status &&& 0xf0) + conn.output.chan
     {status, b1, b2}
   end
 
   def midi_out(_, nil), do: nil
   def midi_out(_, []), do: nil
-  def midi_out(%__MODULE__{output_pid: nil}, _), do: nil
-  def midi_out(%__MODULE__{output_pid: pid}, messages) do
-    Output.write(pid, messages)
+  def midi_out(%__MODULE__{output: %IO{pid: nil}}, _), do: nil
+  def midi_out(%__MODULE__{output: output}, messages) do
+    Output.write(output.pid, messages)
   end
 end

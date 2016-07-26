@@ -136,13 +136,11 @@ defmodule Blister.DSL do
   end
 
   defp parse_connection(c, inputs, outputs) do
-    with {in_pid, in_chan, out_pid, out_chan} <- parse_connection_io(c.io, inputs, outputs),
+    with [input_io, output_io] <- parse_connection_io(c.io, inputs, outputs),
          {bank_msb, bank_lsb} <- parse_bank(c),
     do: {:ok,
-         %Connection{input_pid: in_pid,
-                     input_chan: in_chan,
-                     output_pid: out_pid,
-                     output_chan: out_chan,
+         %Connection{input: input_io,
+                     output: output_io,
                      filter: get_any(c, [:filter, :f]),
                      zone: Map.get(c, :zone),
                      xpose: get_any(c, [:transpose, :xpose]),
@@ -152,7 +150,7 @@ defmodule Blister.DSL do
   end
 
   defp parse_connection_io(nil, _, _) do
-    {nil, nil, nil, nil}
+    [nil, nil]
   end
   defp parse_connection_io({in_sym, out_sym, out_ch}, inputs, outputs)
   when is_atom(in_sym) and is_atom(out_sym) and is_integer(out_ch)
@@ -165,7 +163,8 @@ defmodule Blister.DSL do
     with {_, in_pid} when is_pid(in_pid) <- Map.get(inputs, in_sym),
          {_, out_pid} when is_pid(out_pid) <- Map.get(outputs, out_sym) do
       in_ch = if in_ch_or_nil, do: in_ch_or_nil-1, else: nil
-      {in_pid, in_ch, out_pid, out_ch-1}
+      [%Blister.Connection.IO{sym: in_sym, pid: in_pid, chan: in_ch},
+       %Blister.Connection.IO{sym: out_sym, pid: out_pid, chan: out_ch-1}]
     else
       nil -> {:error, "can not find input #{in_sym} or output #{out_sym} for connection"}
     end

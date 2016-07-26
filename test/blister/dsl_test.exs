@@ -104,20 +104,20 @@ defmodule Blister.DSLTest do
     assert length(conns) == 3
 
     [c1, c2, c3] = conns
-    assert c1 == %Connection{input_pid: context[:in1_pid],
-                             input_chan: nil,
-                             output_pid: context[:out2_pid],
-                             output_chan: 1, # 0-15, whereas file has 1-16
+    input_io = %Blister.Connection.IO{sym: :mb, pid: context[:in1_pid], chan: nil}
+    output_io = %Blister.Connection.IO{sym: :sj, pid: context[:out2_pid], chan: 1}
+    assert c1 == %Connection{input: input_io,
+                             output: output_io,
                              filter: nil,
                              zone: (64..75),
                              xpose: 12,
                              bank_msb: nil,
                              bank_lsb: nil,
                              pc_prog: 64}
-    assert c2 == %Connection{input_pid: context[:in1_pid],
-                             input_chan: 9,
-                             output_pid: context[:out2_pid],
-                             output_chan: 9,
+    input_io = %Blister.Connection.IO{sym: :mb, pid: context[:in1_pid], chan: 9}
+    output_io = %Blister.Connection.IO{sym: :drums, pid: context[:out2_pid], chan: 9}
+    assert c2 == %Connection{input: input_io,
+                             output: output_io,
                              filter: nil,
                              zone: (64..75),
                              xpose: 12,
@@ -126,10 +126,10 @@ defmodule Blister.DSLTest do
                              pc_prog: 2}
     f = c3.filter
     assert f != nil
-    assert c3 == %Connection{input_pid: context[:in2_pid],
-                             input_chan: nil,
-                             output_pid: context[:out1_pid],
-                             output_chan: 3,
+    input_io = %Blister.Connection.IO{sym: :ws_in, pid: context[:in2_pid], chan: nil}
+    output_io = %Blister.Connection.IO{sym: :ws_out, pid: context[:out1_pid], chan: 3}
+    assert c3 == %Connection{input: input_io,
+                             output: output_io,
                              filter: f,
                              zone: nil,
                              xpose: nil,
