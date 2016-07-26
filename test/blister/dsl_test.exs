@@ -1,6 +1,7 @@
 defmodule Blister.DSLTest do
   use ExUnit.Case
   alias Blister.{DSL, Pack, MIDI, Connection}
+  alias Blister.Connection.CIO
   alias Blister.Consts, as: C
 
   @testfile "examples/test.exs"
@@ -104,8 +105,8 @@ defmodule Blister.DSLTest do
     assert length(conns) == 3
 
     [c1, c2, c3] = conns
-    input_io = %Blister.Connection.IO{sym: :mb, pid: context[:in1_pid], chan: nil}
-    output_io = %Blister.Connection.IO{sym: :sj, pid: context[:out2_pid], chan: 1}
+    input_io = %CIO{sym: :mb, pid: context[:in1_pid], chan: nil}
+    output_io = %CIO{sym: :sj, pid: context[:out2_pid], chan: 1}
     assert c1 == %Connection{input: input_io,
                              output: output_io,
                              filter: nil,
@@ -114,8 +115,8 @@ defmodule Blister.DSLTest do
                              bank_msb: nil,
                              bank_lsb: nil,
                              pc_prog: 64}
-    input_io = %Blister.Connection.IO{sym: :mb, pid: context[:in1_pid], chan: 9}
-    output_io = %Blister.Connection.IO{sym: :drums, pid: context[:out2_pid], chan: 9}
+    input_io = %CIO{sym: :mb, pid: context[:in1_pid], chan: 9}
+    output_io = %CIO{sym: :drums, pid: context[:out2_pid], chan: 9}
     assert c2 == %Connection{input: input_io,
                              output: output_io,
                              filter: nil,
@@ -126,8 +127,8 @@ defmodule Blister.DSLTest do
                              pc_prog: 2}
     f = c3.filter
     assert f != nil
-    input_io = %Blister.Connection.IO{sym: :ws_in, pid: context[:in2_pid], chan: nil}
-    output_io = %Blister.Connection.IO{sym: :ws_out, pid: context[:out1_pid], chan: 3}
+    input_io = %CIO{sym: :ws_in, pid: context[:in2_pid], chan: nil}
+    output_io = %CIO{sym: :ws_out, pid: context[:out1_pid], chan: 3}
     assert c3 == %Connection{input: input_io,
                              output: output_io,
                              filter: f,

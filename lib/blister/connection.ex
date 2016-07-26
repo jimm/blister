@@ -8,11 +8,11 @@ defmodule Blister.Connection do
   `output`.
   """
 
-  defmodule IO do
+  defmodule CIO do
     defstruct [:sym, :pid, :chan]
   end
 
-  defstruct [:input, :output,   # IO structs
+  defstruct [:input, :output,   # CIO structs
              :filter, :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
 
   use Bitwise
@@ -90,7 +90,7 @@ defmodule Blister.Connection do
       !P.channel?(message) -> true
       P.note?({_, note, _} = message) ->
         P.channel(message) == conn.input.chan && inside_zone?(conn, note)
-      true -> 
+      true -> true
     end
   end
 
@@ -137,7 +137,7 @@ defmodule Blister.Connection do
 
   def midi_out(_, nil), do: nil
   def midi_out(_, []), do: nil
-  def midi_out(%__MODULE__{output: %IO{pid: nil}}, _), do: nil
+  def midi_out(%__MODULE__{output: %CIO{pid: nil}}, _), do: nil
   def midi_out(%__MODULE__{output: output}, messages) do
     Output.write(output.pid, messages)
   end
