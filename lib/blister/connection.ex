@@ -104,7 +104,7 @@ defmodule Blister.Connection do
   # nothing should be sent.
   #
   # First transpose is applied, then filter function
-  defp munge(conn, {status, _, _} = message) do
+  defp munge(conn, message) do
     msg = cond do
       P.note?(message) ->
         # note off, note on, poly pressure

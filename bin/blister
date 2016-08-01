@@ -1,18 +1,20 @@
 #!/bin/bash
 #
-# usage: blister [list | text keys...]
+# usage: blister [--list | --text [--cmds "..."]] [some_blister_file.exs]
 #
-# "list" outputs the list of connected MIDI devices and exits.
-# "text" uses a text-only interface (no curses windows).
-# No argument starts Blister normally.
+# --list Outputs the list of connected MIDI devices and exits.
+# --text Uses a text-only interface (no curses windows).
+# --cmds "..." sends the characters in the string one by one to Blister.
+#        Normally used only for develompent/debugging.
 
 tmpfile=/tmp/$$.exs
 
 cd $(dirname $0)/.. >/dev/null
 touch $tmpfile
-if [ -z "$1" ] ; then
-    elixir --erl -noinput --erl +A10 -S mix run --no-halt
-else
+echo "$*" | grep -- "--text"
+if [ $? -eq 0 ] ; then
     elixir -S mix run --no-halt $tmpfile $*
+else
+    elixir --erl -noinput --erl +A10 -S mix run --no-halt $tmpfile $*
 fi
 rm -f $tmpfile

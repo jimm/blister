@@ -26,6 +26,8 @@ defmodule Blister.Controller do
     {:ok, state}
   end
 
+  def load_file(file), do: GenServer.call(__MODULE__, {:load_file, file})
+
   def start_command_loop, do: GenServer.call(__MODULE__, :start_command_loop)
 
   def next_patch, do: Pack.next_patch
@@ -45,6 +47,12 @@ defmodule Blister.Controller do
   end
 
   # ================ GenServer ================
+
+  def handle_call({:load_file, file}, _from, state) do
+    Logger.debug("controller handler {:load_file, #{file}}")
+    Pack.load(file)
+    {:reply, nil, state}
+  end
 
   def handle_call(:start_command_loop, _from, state) do
     Logger.debug("controller handler :start_command_loop")
