@@ -34,7 +34,7 @@ defmodule Blister.Mixfile do
 
   defp deps do
     [{:portmidi, "~> 5.0"},
-     {:cecho, git: "https://github.com/mazenharake/cecho.git"} ] #,
-     # {:logger_file_backend, "~> 0.0.8"}]
+     {:cecho, git: "https://github.com/mazenharake/cecho.git"},
+     {:logger_file_backend, "~> 0.0.8"}]
   end
 end

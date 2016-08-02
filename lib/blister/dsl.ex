@@ -83,7 +83,7 @@ defmodule Blister.DSL do
 
   defp parse_message_bindings(nil), do: {:ok, %{}}
   defp parse_message_bindings(mbs) when is_map(mbs), do: {:ok, mbs}
-  defp parse_triggers(_) do
+  defp parse_message_bindings(_) do
     {:error, "message_keys must be a map"}
   end
 

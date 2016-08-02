@@ -11,10 +11,9 @@ tmpfile=/tmp/$$.exs
 
 cd $(dirname $0)/.. >/dev/null
 touch $tmpfile
-echo "$*" | grep -- "--text"
-if [ $? -eq 0 ] ; then
-    elixir -S mix run --no-halt $tmpfile $*
-else
+if [ "$MIX_ENV" = "prod" ] ; then
     elixir --erl -noinput --erl +A10 -S mix run --no-halt $tmpfile $*
+else
+    elixir -S mix run --no-halt $tmpfile $*
 fi
 rm -f $tmpfile

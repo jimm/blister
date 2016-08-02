@@ -43,7 +43,7 @@ defmodule Blister.GUI.Text do
 
   def prompt(title, prompt, default) do
     Logger.debug "prompt"
-    gets_prompt = title <> case default do
+    gets_prompt = "#{title} | #{prompt}" <> case default do
                              nil -> ""
                              _ -> " (#{default})"
                            end
@@ -61,13 +61,20 @@ defmodule Blister.GUI.Text do
 
   # ================ Handlers ================
 
+  def handle_call({:set_commands, chars}, from, _) when is_binary(chars) do
+    handle_call({:set_commands, chars |> to_char_list}, from, nil)
+  end
   def handle_call({:set_commands, chars}, _from, _) do
     {:reply, :ok, chars}
   end
 
-  def handle_call(:getch, _from, [ch | commands]) do
-    # Logger.info("text gui returning #{[ch] |> to_string} from getch")
+  def handle_call(:getch, _from, []) do
+    Logger.debug("getch with empty commands, prompting")
     ch = IO.gets("command: ") |> to_char_list |> hd
+    {:reply, ch, []}
+  end
+  def handle_call(:getch, _from, [ch | commands]) do
+    Logger.debug("getch with commands [#{inspect ch} | #{inspect commands}]")
     {:reply, ch, commands}
   end
 

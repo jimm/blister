@@ -71,7 +71,7 @@ defmodule Blister.MIDI.MockDriver do
 
   # ================ Handlers ================
 
-  def handle_call(:clear, _from, state) do
+  def handle_call(:clear, _from, _state) do
     {:reply, :ok, %{inputs: %{"input 1" => [], # received messages
                               "input 2" => []},
                     outputs: %{"output 1" => [], # sent messages

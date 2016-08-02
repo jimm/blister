@@ -42,6 +42,8 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 
 # To Do
 
+- Triggers and messages can take either lists of messages or functions
+- Fix examples/example.exs format
 - Better names for IO, at least in config files
 - App needs to accept file name to read on start
 - Curses GUI
@@ -50,5 +52,5 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
     - doupdate
     - window movement
     - wresize?
-  - Use window movement in window.ex when resized
   - Resize (supported by cecho? if not, add)
+  - Use window movement in window.ex when resized

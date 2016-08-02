@@ -63,8 +63,8 @@ defmodule Blister.Connection do
   end
   def midi_in(conn, messages) do
     messages
-    |> Enum.map(&process(conn, &1))
-    |> Enum.map(&midi_out(conn, &1))
+    |> Stream.map(&process(conn, &1))
+    |> Stream.each(&midi_out(conn, &1))
   end
 
   @doc """
@@ -76,9 +76,9 @@ defmodule Blister.Connection do
   """
   def process(conn, messages) do
     messages
-    |> Enum.map(&remove_timestamp/1)
-    |> Enum.filter(&accept_from_input?(conn, &1))
-    |> Enum.map(&munge(conn, &1))
+    |> Stream.map(&remove_timestamp/1)
+    |> Stream.filter(&accept_from_input?(conn, &1))
+    |> Stream.map(&munge(conn, &1))
   end
 
   defp remove_timestamp({{_, _, _}, t} = msg) when is_integer(t), do: msg

@@ -48,17 +48,17 @@ defmodule Blister do
   defp do_run("test", driver_module, gui_module, gui_config_func) do
     do_run(nil, driver_module, gui_module, gui_config_func)
   end
-  defp do_run(load_file, driver_module, gui_module, nil) do
+  defp do_run(load_file, driver_module, gui_module, gui_config_func) do
     Logger.info("starting supervisor")
     result = Blister.Supervisor.start_link(driver_module, gui_module)
     if load_file do
       Blister.Controller.load_file(load_file)
     end
-    result
-  end
-  defp do_run(load_file, driver_module, gui_module, gui_config_func) do
-    result = do_run(load_file, driver_module, gui_module, nil)
-    gui_config_func.()
+
+    if gui_config_func do
+      gui_config_func.()
+    end
+
     Logger.debug("calling start_command_loop")
     Blister.Controller.start_command_loop
     receive do

@@ -1,3 +1,4 @@
+# NOTE: This file's format is out of date. It won't load.
 %{inputs: [
     {"IAC Driver Bus 1", :mb, "midiboard"},
     {"Foo Port 0", :ws_in, "WaveStation"}
