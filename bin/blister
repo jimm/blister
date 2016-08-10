@@ -7,13 +7,15 @@
 # --cmds "..." sends the characters in the string one by one to Blister.
 #        Normally used only for develompent/debugging.
 
-tmpfile=/tmp/$$.exs
+TMPFILE=/tmp/$$.exs
+MIX_ENV=${MIX_ENV:-prod}
+export MIX_ENV
 
 cd $(dirname $0)/.. >/dev/null
-touch $tmpfile
+touch $TMPFILE
 if [ "$MIX_ENV" = "prod" ] ; then
-    elixir --erl -noinput --erl +A10 -S mix run --no-halt $tmpfile $*
+    elixir --erl -noinput --erl +A10 -S mix run --no-halt $TMPFILE $*
 else
-    elixir -S mix run --no-halt $tmpfile $*
+    elixir -S mix run --no-halt $TMPFILE $*
 fi
-rm -f $tmpfile
+rm -f $TMPFILE

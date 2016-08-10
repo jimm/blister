@@ -4,9 +4,8 @@ defmodule Blister.Cursor do
   A Cursor knows the current SongList, Song, and Patch, how to move between
   songs and patches, and how to find them given name regexes.
 
-  We search for items in lists instead of storing indexes to them. That's so
-  that when items are added/removed we don't need to keep the indexes here
-  up to date.
+  When marking our position (before reloading a file), we store names
+  instead of indexes in case things move around.
   """
 
   defstruct song_list_index: 0, song_list: [],
@@ -16,7 +15,7 @@ defmodule Blister.Cursor do
     song_name: nil,
     patch_name: nil
 
-  alias Blister.{Patch, SongList}
+  alias Blister.{Song, Patch, SongList}
 
   # TODO call this every time we add a new song or patch
   def init(cursor, pack) do
@@ -29,8 +28,8 @@ defmodule Blister.Cursor do
       patch_index: 0, patch: patch}
   end
 
-  def next_song(%{song_list: nil} = cursor, _), do: cursor
-  def next_song(%{song_list: %SongList{songs: []}} = cursor, _), do: cursor
+  def next_song(%__MODULE__{song_list: nil} = cursor), do: cursor
+  def next_song(%__MODULE__{song_list: %SongList{songs: []}} = cursor), do: cursor
   def next_song(cursor) do
     new_song_index = cursor.song_index + 1
     if new_song_index < length(cursor.song_list) do
@@ -47,8 +46,8 @@ defmodule Blister.Cursor do
     end
   end
 
-  def prev_song(%{song_list: nil} = cursor), do: cursor
-  def prev_song(%{song_list: %SongList{songs: []}} = cursor), do: cursor
+  def prev_song(%__MODULE__{song_list: nil} = cursor), do: cursor
+  def prev_song(%__MODULE__{song_list: %SongList{songs: []}} = cursor), do: cursor
   def prev_song(cursor) do
     new_song_index = cursor.song_index - 1
     if new_song_index >= 0 do
@@ -65,8 +64,8 @@ defmodule Blister.Cursor do
     end
   end
 
-  def next_patch(%{song: nil} = cursor, _), do: cursor
-  def next_patch(%{song: %{patches: []}} = cursor, _), do: cursor
+  def next_patch(%__MODULE__{song: nil} = cursor), do: cursor
+  def next_patch(%__MODULE__{song: %Song{patches: []}} = cursor), do: cursor
   def next_patch(cursor) do
     new_patch_index = cursor.patch_index + 1
     if new_patch_index < length(cursor.song.patches) do
@@ -77,8 +76,8 @@ defmodule Blister.Cursor do
     end
   end
 
-  def prev_patch(%{song: nil} = cursor), do: cursor
-  def prev_patch(%{song: %{patches: []}} = cursor), do: cursor
+  def prev_patch(%__MODULE__{song: nil} = cursor), do: cursor
+  def prev_patch(%__MODULE__{song: %Song{patches: []}} = cursor), do: cursor
   def prev_patch(cursor) do
     new_patch_index = cursor.patch_index - 1
     if new_patch_index >= 0 do
@@ -146,7 +145,7 @@ defmodule Blister.Cursor do
   Since names can change we use Damerau-Levenshtein distance on lowercase
   versions of all strings.
   """
-  def restore(%{song_list_name: nil} = cursor, _), do: cursor
+  def restore(%__MODULE__{song_list_name: nil} = cursor, _), do: cursor
   def restore(cursor, pack) do
     song_list = find_nearest_match(pack.song_lists, cursor.song_list_name) || pack.all_songs
     song = find_nearest_match(song_list.songs, cursor.song_name) || first_of(song_list.songs)
@@ -221,14 +220,4 @@ defmodule Blister.Cursor do
   defp first_of(nil), do: nil
   defp first_of([]), do: nil
   defp first_of(list), do: hd(list)
-
-  defp last_of(nil), do: nil
-  defp last_of([]), do: nil
-  defp last_of(list), do: hd(Enum.reverse(list))
-
-  defp index_of(nil, _), do: nil
-  defp index_of([], _), do: nil
-  defp index_of(list, val) do
-    list |> Enum.find_index(fn elem -> elem == val end)
-  end
 end

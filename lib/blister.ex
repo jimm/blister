@@ -19,28 +19,17 @@ defmodule Blister do
   end
 
   defp run(parsed, load_file) do
+    driver_module = get_and_init_midi_driver
     if Keyword.get(parsed, :list) do
-      list
+      list(driver_module)
     else
-      driver_module = Application.get_env(:blister, :midi_driver_module)
-      if driver_module == Blister.MIDI.MockDriver do
-        Blister.MIDI.MockDriver.start_link
-      end
-
-      text_mode = Keyword.get(parsed, :text)
-      gui_module = if text_mode do
-        Blister.GUI.Text
-      else
-        Application.get_env(:blister, :gui_module)
-      end
-
+      gui_module = get_and_init_gui_module(parsed)
       cmds = Keyword.get(parsed, :cmds)
       gui_config_func = if gui_module == Blister.GUI.Text && cmds do
         fn -> Blister.GUI.Text.set_commands(cmds |> to_char_list) end
       else
         nil
       end
-
       do_run(load_file, driver_module, gui_module, gui_config_func)
     end
   end
@@ -67,8 +56,8 @@ defmodule Blister do
     result
   end
 
-  defp list do
-    %{input: inputs, output: outputs} = PortMidi.devices
+  defp list(driver_module) do
+    %{input: inputs, output: outputs} = driver_module.devices
     f = fn d -> IO.puts "  #{d.name}" end
     IO.puts "Inputs:"
     inputs |> Enum.map(f)
@@ -92,5 +81,21 @@ defmodule Blister do
     IO.puts "error: #{invalid.inspect}"
     IO.puts ""
     usage(nil)
+  end
+
+  defp get_and_init_midi_driver do
+    driver_module = Application.get_env(:blister, :midi_driver_module)
+    if driver_module == Blister.MIDI.MockDriver do
+      Blister.MIDI.MockDriver.start_link
+    end
+    driver_module
+  end
+
+  defp get_and_init_gui_module(options) do
+    if Keyword.get(options, :text) do
+      Blister.GUI.Text
+    else
+      Application.get_env(:blister, :gui_module)
+    end
   end
 end

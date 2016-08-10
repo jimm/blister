@@ -1,7 +1,7 @@
 use Mix.Config
 config :blister,
-  driver: Blister.MIDI.PortMidi,
-  gui: Blister.GUI.Text
+  midi_driver_module: Blister.MIDI.MockDriver,
+  gui_module: Blister.GUI.Text
 config :logger, :blister_logger,
   path: "/tmp/blister_test.log",
   level: :warn

@@ -69,7 +69,6 @@ defmodule Blister.GUI.Text do
   end
 
   def handle_call(:getch, _from, []) do
-    Logger.debug("getch with empty commands, prompting")
     ch = IO.gets("command: ") |> to_char_list |> hd
     {:reply, ch, []}
   end

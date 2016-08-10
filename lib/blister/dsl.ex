@@ -167,7 +167,7 @@ defmodule Blister.DSL do
       [%CIO{sym: in_sym, pid: in_pid, chan: in_ch},
        %CIO{sym: out_sym, pid: out_pid, chan: out_ch-1}]
     else
-      {_, nil} -> {:error, "can not find input #{in_sym} or output #{out_sym} for connection"}
+      {_, nil} -> {:error, "input #{in_sym} or output #{out_sym} not found"}
     end
   end
   defp parse_connection_io(huh, _, _) do
