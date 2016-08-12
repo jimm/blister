@@ -18,7 +18,6 @@ defmodule Blister.Supervisor do
     :init.stop
   end
 
-  defp gui_workers(nil), do: []
   defp gui_workers(gui_module) do
     [worker(gui_module, []),
      worker(Controller, [gui_module])]

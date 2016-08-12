@@ -20,7 +20,7 @@ defmodule Blister do
 
   defp run(parsed, load_file) do
     if Keyword.get(parsed, :list) do
-      list
+      list()
     else
       driver_module = Application.get_env(:blister, :midi_driver_module)
       if driver_module == Blister.MIDI.MockDriver do
@@ -75,7 +75,7 @@ defmodule Blister do
     IO.puts "Outputs:"
     outputs |> Enum.map(f)
     :init.stop
-    {:ok, self}
+    {:ok, self()}
   end
 
   defp usage(nil) do

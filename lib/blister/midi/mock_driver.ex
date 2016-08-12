@@ -94,13 +94,13 @@ defmodule Blister.MIDI.MockDriver do
   end
 
   def handle_call({:open, :input, name}, _from, state) do
-    ref = make_ref
+    ref = make_ref()
     {:reply, {:ok, ref}, %{state |
                            input_refs: Map.put(state.input_refs, ref, name)}}
   end
 
   def handle_call({:open, :output, name}, _from, state) do
-    ref = make_ref
+    ref = make_ref()
     {:reply, {:ok, ref}, %{state |
                            output_refs: Map.put(state.output_refs, ref, name)}}
   end

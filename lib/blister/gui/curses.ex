@@ -14,8 +14,8 @@ defmodule Blister.GUI.Curses do
   # ================ Server ================
 
   def start_link do
-    config_curses
-    windows = create_windows
+    config_curses()
+    windows = create_windows()
     GenServer.start_link(__MODULE__, windows, name: __MODULE__)
   end
 
@@ -136,7 +136,7 @@ defmodule Blister.GUI.Curses do
       info_win: InfoWindow.create(G.info_rect, "Song Notes")
     }
 
-    draw_frame
+    draw_frame()
     :cecho.refresh
 
     # TODO

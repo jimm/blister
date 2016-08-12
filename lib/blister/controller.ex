@@ -101,26 +101,26 @@ defmodule Blister.Controller do
     command_loop(gui)
   end
 
-  defp dispatch(??),     do: help
-  defp dispatch(?h),     do: help
-  defp dispatch(@f1),    do: help
-  defp dispatch(?q),     do: quit
-  defp dispatch(?j),     do: next_patch
-  defp dispatch(@down),  do: next_patch
-  defp dispatch(?\s),    do: next_patch
-  defp dispatch(?k),     do: prev_patch
-  defp dispatch(@up),    do: prev_patch
-  defp dispatch(?n),     do: next_song
-  defp dispatch(@right), do: next_song
-  defp dispatch(?p),     do: prev_song
-  defp dispatch(@left),  do: prev_song
-  defp dispatch(?g),     do: :ok    # go to song
-  defp dispatch(?t),     do: :ok    # go to song list
-  defp dispatch(?e),     do: :ok    # edit
-  defp dispatch(@esc),   do: :ok    # panic
-  defp dispatch(?l),     do: load   # load
-  defp dispatch(?s),     do: save   # save
-  defp dispatch(?r),     do: reload # reload
+  defp dispatch(??),     do: help()
+  defp dispatch(?h),     do: help()
+  defp dispatch(@f1),    do: help()
+  defp dispatch(?q),     do: quit()
+  defp dispatch(?j),     do: next_patch()
+  defp dispatch(@down),  do: next_patch()
+  defp dispatch(?\s),    do: next_patch()
+  defp dispatch(?k),     do: prev_patch()
+  defp dispatch(@up),    do: prev_patch()
+  defp dispatch(?n),     do: next_song()
+  defp dispatch(@right), do: next_song()
+  defp dispatch(?p),     do: prev_song()
+  defp dispatch(@left),  do: prev_song()
+  defp dispatch(?g),     do: :ok      # go to song
+  defp dispatch(?t),     do: :ok      # go to song list
+  defp dispatch(?e),     do: :ok      # edit
+  defp dispatch(@esc),   do: :ok      # panic
+  defp dispatch(?l),     do: load()   # load
+  defp dispatch(?s),     do: save()   # save
+  defp dispatch(?r),     do: reload() # reload
   defp dispatch(c) when c > 0 do
     # TODO use message window
     # ch when ch > 0 ->

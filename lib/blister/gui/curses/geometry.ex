@@ -3,42 +3,42 @@
 defmodule Blister.GUI.Curses.Geometry do
 
   def song_list_rect do
-    g = geometry
+    g = geometry()
     {g.sl_height, g.top_width, 0, 0}
   end
 
   def song_rect do
-    g = geometry
+    g = geometry()
     {g.sl_height, g.top_width, 0, g.top_width}
   end
 
   def song_lists_rect do
-    g = geometry
+    g = geometry()
     {g.sls_height, g.top_width, g.sl_height, 0}
   end
 
   def trigger_rect do
-    g = geometry
+    g = geometry()
     {g.sls_height, g.top_width, g.sl_height, g.top_width}
   end
 
   def patch_rect do
-    g = geometry
+    g = geometry()
     {g.bot_height, g.max_col, g.top_height, 0}
   end
 
   def message_rect do
-    g = geometry
+    g = geometry()
     {1, g.max_col, g.max_row-1, 0}
   end
 
   def info_rect do
-    g = geometry
+    g = geometry()
     {g.top_height, g.info_width, 0, g.info_left}
   end
 
   def help_rect do
-    g = geometry
+    g = geometry()
     {g.max_row - 6, g.max_col - 6, 3, 3}
   end
 
