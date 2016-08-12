@@ -68,7 +68,7 @@ defmodule Blister.Pack do
   end
 
   def add_song(song) do
-    list = all_songs
+    list = all_songs()
       |> SongList.add_song(song)
       |> SongList.sort_by_name
     Agent.update(__MODULE__, fn pack -> %{pack | all_songs: list} end)

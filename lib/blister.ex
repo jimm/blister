@@ -64,7 +64,7 @@ defmodule Blister do
     IO.puts "Outputs:"
     outputs |> Enum.map(f)
     :init.stop
-    {:ok, self}
+    {:ok, self()}
   end
 
   defp usage(nil) do
