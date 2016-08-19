@@ -29,7 +29,7 @@ defmodule Blister.MIDI.MockDriverTest do
 
   test "sends input to listeners" do
     {:ok, inp} = MD.open(:input, "input 1")
-    MD.listen(inp, self)
+    MD.listen(inp, self())
     MD.input(inp, {1, 2, 3})
     MD.input(inp, [{4, 5, 6}, {7, 0, 0}])
     receive_or_flunk(inp, {1, 2, 3})

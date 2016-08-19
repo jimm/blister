@@ -8,7 +8,7 @@ defmodule Blister.GUI.Curses do
   require Logger
   alias Blister.Pack
   alias Blister.GUI.Curses.{Window, ListWindow, PatchWindow, TriggerWindow,
-                            InfoWindow, PromptWindow}
+                            InfoWindow}
   alias Blister.GUI.Curses.Geometry, as: G
 
   # ================ Server ================
@@ -63,11 +63,12 @@ defmodule Blister.GUI.Curses do
     :cecho.getch
   end
 
-  def prompt(title, prompt, default \\ nil) do
+  # TODO implement
+  def prompt(_title, _prompt, default \\ nil) do
     # TODO use PromptWindow
-    pwin = Window
-    # return {:ok, file} or nil
-    nil
+    # pwin = Window
+    # return {:ok, value} or nil
+    {:ok, default}
   end
 
   def cleanup do

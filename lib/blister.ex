@@ -19,7 +19,7 @@ defmodule Blister do
   end
 
   defp run(parsed, load_file) do
-    driver_module = get_and_init_midi_driver
+    driver_module = get_and_init_midi_driver()
     if Keyword.get(parsed, :list) do
       list(driver_module)
     else
@@ -49,9 +49,11 @@ defmodule Blister do
     end
 
     Logger.debug("calling start_command_loop")
-    Blister.Controller.start_command_loop
-    receive do
-      :quit -> :ok              # never received, but keeps app running
+    if gui_module do
+      Blister.Controller.start_command_loop
+      receive do
+        :quit -> :ok            # never received, but keeps app running
+      end
     end
     result
   end

@@ -18,17 +18,6 @@ defmodule Blister.Mixfile do
                      :test -> [:logger]
                      _ -> [:logger, :portmidi]
                    end,
-     env: case Mix.env do
-            :prod ->
-              [midi_driver_module: PortMidi,
-               gui_module: Blister.GUI.Curses]
-            :dev ->
-              [midi_driver_module: PortMidi,
-               gui_module: Blister.GUI.Text]
-            :test ->
-              [midi_driver_module: Blister.MIDI.MockDriver,
-               gui_module: nil]
-          end,
      mod: {Blister, []}]
   end
 
