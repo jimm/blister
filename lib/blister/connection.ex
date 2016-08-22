@@ -4,7 +4,7 @@ defmodule Blister.Connection do
   the Input it is optionally modified or filtered, then the remaining
   modified data is sent to the Output.
 
-  If `input_chan` is nil then all messages from `input` will be sent to
+  If `input.chan` is nil then all messages from `input` will be sent to
   `output`.
   """
 
@@ -29,15 +29,15 @@ defmodule Blister.Connection do
       messages
     end
     messages = if conn.bank_lsb do
-      [{C.controller + conn.outout_chan,
-        C.cc_bank_select_lsb + conn.outout_chan,
+      [{C.controller + conn.output.chan,
+        C.cc_bank_select_lsb + conn.output.chan,
         conn.bank_lsb} | messages]
     else
       messages
     end
     messages = if conn.bank_msb do
-      [{C.controller + conn.outout_chan,
-        C.cc_bank_select_msb + conn.outout_chan,
+      [{C.controller + conn.output.chan,
+        C.cc_bank_select_msb + conn.output.chan,
         conn.bank_msb} | messages]
     else
       messages

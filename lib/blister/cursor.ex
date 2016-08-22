@@ -20,7 +20,7 @@ defmodule Blister.Cursor do
   # TODO call this every time we add a new song or patch
   def init(cursor, pack) do
     song_list = first_of(pack.song_lists)
-    song = first_of(song_list)
+    song = if song_list, do: first_of(song_list.songs), else: nil
     patch = if song, do: first_of(song.patches)
     %{cursor |
       song_list_index: 0, song_list: song_list,
@@ -32,7 +32,7 @@ defmodule Blister.Cursor do
   def next_song(%__MODULE__{song_list: %SongList{songs: []}} = cursor), do: cursor
   def next_song(cursor) do
     new_song_index = cursor.song_index + 1
-    if new_song_index < length(cursor.song_list) do
+    if new_song_index < length(cursor.song_list.songs) do
       Patch.stop(cursor.patch)
       song = cursor.song_list.songs |> Enum.at(new_song_index)
       patch = song.patches |> hd
@@ -73,6 +73,8 @@ defmodule Blister.Cursor do
       patch = cursor.song.patches |> Enum.at(new_patch_index)
       Patch.start(patch)
       %{cursor | patch_index: new_patch_index, patch: patch}
+    else
+      cursor
     end
   end
 
@@ -85,6 +87,8 @@ defmodule Blister.Cursor do
       patch = cursor.song.patches |> Enum.at(new_patch_index)
       Patch.start(patch)
       %{cursor | patch_index: new_patch_index, patch: patch}
+    else
+      cursor
     end
   end
 
@@ -119,7 +123,7 @@ defmodule Blister.Cursor do
     if new_song_list == nil do
       cursor
     else
-      song = first_of(new_song_list)
+      song = first_of(new_song_list.songs)
       patch = if song, do: first_of(song.patches), else: nil
       if patch != cursor.patch do
         Patch.stop(cursor.patch)

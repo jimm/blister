@@ -82,7 +82,10 @@ defmodule Blister.Pack do
     Logger.debug("load file #{file}")
     new_pack = DSL.load(file)
     Agent.update(__MODULE__, fn pack ->
-      %{new_pack | cursor: pack.cursor, gui: pack.gui, use_midi: pack.use_midi}
+      Logger.debug "init cursor using new pack" # DEBUG
+      cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
+      Logger.debug "cursor initialized, returning" # DEBUG
+      %{new_pack | cursor: cursor, gui: pack.gui, use_midi: pack.use_midi}
     end)
   end
 
