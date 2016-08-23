@@ -15,103 +15,165 @@ defmodule Blister.Cursor do
     song_name: nil,
     patch_name: nil
 
-  alias Blister.{Song, Patch, SongList}
+  alias Blister.{Pack, Patch, SongList}
 
-  # TODO call this every time we add a new song or patch
   def init(cursor, pack) do
-    song_list = first_of(pack.song_lists)
-    song = if song_list, do: first_of(song_list.songs), else: nil
-    patch = if song, do: first_of(song.patches)
-    %{cursor |
-      song_list_index: 0, song_list: song_list,
-      song_index: 0, song: song,
-      patch_index: 0, patch: patch}
+    next_song_list(%{cursor | song_list_index: -1}, pack)
   end
 
-  def next_song(%__MODULE__{song_list: nil} = cursor), do: cursor
-  def next_song(%__MODULE__{song_list: %SongList{songs: []}} = cursor), do: cursor
-  def next_song(cursor) do
-    new_song_index = cursor.song_index + 1
-    if new_song_index < length(cursor.song_list.songs) do
-      Patch.stop(cursor.patch)
-      song = cursor.song_list.songs |> Enum.at(new_song_index)
-      patch = song.patches |> hd
-      new_patch_index = 0
-      Patch.start(patch)
-      %{cursor |
-        song_index: new_song_index, song: song,
-        patch_index: new_patch_index, patch: patch}
-    else
-      cursor
-    end
-  end
-
-  def prev_song(%__MODULE__{song_list: nil} = cursor), do: cursor
-  def prev_song(%__MODULE__{song_list: %SongList{songs: []}} = cursor), do: cursor
-  def prev_song(cursor) do
-    new_song_index = cursor.song_index - 1
-    if new_song_index >= 0 do
-      Patch.stop(cursor.patch)
-      song = cursor.song_list.songs |> Enum.at(new_song_index)
-      new_patch_index = 0
-      patch = song.patches |> hd
-      Patch.start(patch)
-      %{cursor |
-        song_index: new_song_index, song: song,
-        patch_index: new_patch_index, patch: patch}
-    else
-      cursor
-    end
-  end
-
+  @doc """
+  Move to the next patch. At the end of a song, go to the first patch of the
+  next song in the active song list. If we are at the end of the last song
+  in the list, don't go anywhere.
+  """
   def next_patch(%__MODULE__{song: nil} = cursor), do: cursor
-  def next_patch(%__MODULE__{song: %Song{patches: []}} = cursor), do: cursor
-  def next_patch(cursor) do
+  def next_patch(cursor, pack) do
     new_patch_index = cursor.patch_index + 1
-    if new_patch_index < length(cursor.song.patches) do
-      Patch.stop(cursor.patch)
-      patch = cursor.song.patches |> Enum.at(new_patch_index)
-      Patch.start(patch)
-      %{cursor | patch_index: new_patch_index, patch: patch}
+    if new_patch_index >= length(cursor.song.patches) do
+      next_song(cursor, pack)
     else
-      cursor
+      move_to_patch(cursor, new_patch_index)
     end
   end
 
+  @doc """
+  Move to the previous patch. At the start of a song, go to the last patch
+  of the previous song in the active song list. If we are at the start of
+  the first song in the list, don't go anywhere.
+  """
   def prev_patch(%__MODULE__{song: nil} = cursor), do: cursor
-  def prev_patch(%__MODULE__{song: %Song{patches: []}} = cursor), do: cursor
-  def prev_patch(cursor) do
+  def prev_patch(cursor, pack) do
     new_patch_index = cursor.patch_index - 1
-    if new_patch_index >= 0 do
-      Patch.stop(cursor.patch)
-      patch = cursor.song.patches |> Enum.at(new_patch_index)
-      Patch.start(patch)
-      %{cursor | patch_index: new_patch_index, patch: patch}
+    if new_patch_index < 0 do
+      prev_song(cursor, pack, :last)
     else
+      move_to_patch(cursor, new_patch_index)
+    end
+  end
+
+  @doc """
+  Move to the first patch of the next song. If this is the last song in the
+  active song list, move to the next song list. If this is the last song of
+  the last song list, don't go anywhere.
+  """
+  def next_song(%__MODULE__{song_list: nil} = cursor, _), do: cursor
+  def next_song(cursor, pack) do
+    new_song_index = cursor.song_index + 1
+    if new_song_index >= length(cursor.song_list.songs) do
+      next_song_list(cursor, pack)
+    else
+      song = cursor.song_list.songs |> Enum.at(new_song_index)
+      move_to_patch(%{cursor | song_index: new_song_index, song: song}, :first)
+    end
+  end
+
+  @doc """
+  Move to the previous song. If this is the first song in the active song
+  list, move to the last song in the previous song list. If this is the
+  first song of the first song list, don't go anywhere.
+
+  `which_patch` determines which patch in the song is our final destination.
+  It must be either :first (the default) or :last.
+  """
+  def prev_song(cursor, pack, which_patch \\ :first)
+  def prev_song(%__MODULE__{song_list: nil} = cursor, _, _), do: cursor
+  def prev_song(cursor, pack, which_patch) do
+    new_song_index = cursor.song_index - 1
+    if new_song_index < 0 do
+      prev_song_list(cursor, pack, :last, which_patch)
+    else
+      song = cursor.song_list.songs |> Enum.at(new_song_index)
+      move_to_patch(%{cursor | song_index: new_song_index, song: song}, which_patch)
+    end
+  end
+
+  @doc """
+  Move to the first patch of the first song of the next song list. If this
+  is the last song list, don't go anywhere.
+  """
+  def next_song_list(cursor, %Pack{song_lists: []}), do: cursor
+  def next_song_list(cursor, pack) do
+    new_song_list_index = cursor.song_list_index + 1
+    if new_song_list_index >= length(pack.song_lists) do
       cursor
+    else
+      %{cursor |
+        song_list_index: new_song_list_index,
+        song_list: pack.song_lists |> Enum.at(new_song_list_index),
+        song_index: -1}
+      |> next_song(pack)
+    end
+  end
+
+  @doc """
+  Move to the first/last song of the previous song list. If this is the
+  first song of the first song list, don't go anywhere.
+
+  `which_song` and `which_patch` determine which patch in which song is our
+  final destination. They must be either :first (the default) or :last.
+  """
+  def prev_song_list(cursor, pack, which_song \\ :first, which_patch \\ :first)
+  def prev_song_list(cursor, %Pack{song_lists: []}, _, _), do: cursor
+  def prev_song_list(cursor, pack, which_song, which_patch) do
+    new_song_list_index = cursor.song_list_index - 1
+    if new_song_list_index < 0 do
+      cursor
+    else
+      song_list = pack.song_lists |> Enum.at(new_song_list_index)
+      case which_song do
+        :first ->
+          %{cursor |
+            song_list_index: new_song_list_index, song_list: song_list,
+            song_index: -1}
+          |> next_song(pack)
+          :last ->
+          %{cursor |
+            song_list_index: new_song_list_index, song_list: song_list,
+            song_index: length(song_list.songs)}
+          |> prev_song(pack, which_patch)
+      end
     end
   end
 
   def goto_song(cursor, pack, name_regex_str) do
-    new_song = if cursor.song_list do
-      SongList.find(cursor.song_list, name_regex_str)
+    new_song_index = if cursor.song_list do
+      SongList.find_index(cursor.song_list, name_regex_str)
     end
-    new_song = new_song || SongList.find(pack.all_songs, name_regex_str)
-    new_patch = if new_song, do: hd(new_song.patches), else: nil
 
-    if new_song && new_song != cursor.song || # moved to new song
-       (new_song == cursor.song && cursor.patch != new_patch) do # same song, new patch
-      Patch.stop(cursor.patch)
+    {new_song_list_index, new_song_index} = if new_song_index do
+      {cursor.song_list_index, new_song_index}
+    else
+      indexes = pack.song_lists
+      |> Enum.map(fn sl -> SongList.find_index(sl, name_regex_str) end)
+      index_of_index = indexes |> Enum.find(fn idx -> idx end)
+      {index_of_index, indexes |> Enum.at(index_of_index)}
+    end
 
-      new_song_list = if Enum.find(cursor.song_list.songs, fn s -> s == new_song end) do
-        cursor.song_list
+    {new_song_list_index, new_song_index} = if new_song_index do
+      {new_song_list_index, new_song_index}
+    else
+      idx = SongList.find_index(pack.all_songs, name_regex_str)
+      if idx do
+        {nil, idx}
       else
-        # Not found in current song list. Switch to list of all songs.
+        {nil, nil}
+      end
+    end
+
+    if new_song_list_index == nil && new_song_index == nil do
+      cursor
+    else
+      song_list = if new_song_list_index do
+        pack.song_lists |> Enum.at(new_song_list_index)
+      else
         pack.all_songs
       end
-
-      Patch.start(new_patch)
-      %{cursor | song_list: new_song_list, song: new_song, patch: new_patch}
+      %{cursor |
+        song_list_index: new_song_list_index,
+        song_list: song_list,
+        song_index: new_song_index,
+        song: (if song_list, do: song_list.songs |> Enum.at(new_song_index))}
+        |> move_to_patch(:first)
     end
   end
 
@@ -123,8 +185,8 @@ defmodule Blister.Cursor do
     if new_song_list == nil do
       cursor
     else
-      song = first_of(new_song_list.songs)
-      patch = if song, do: first_of(song.patches), else: nil
+      song = first_index_of(new_song_list.songs)
+      patch = if song, do: first_index_of(song.patches), else: nil
       if patch != cursor.patch do
         Patch.stop(cursor.patch)
         Patch.start(patch)
@@ -152,7 +214,7 @@ defmodule Blister.Cursor do
   def restore(%__MODULE__{song_list_name: nil} = cursor, _), do: cursor
   def restore(cursor, pack) do
     song_list = find_nearest_match(pack.song_lists, cursor.song_list_name) || pack.all_songs
-    song = find_nearest_match(song_list.songs, cursor.song_name) || first_of(song_list.songs)
+    song = find_nearest_match(song_list.songs, cursor.song_name) || first_index_of(song_list.songs)
     patch = if song do
       find_nearest_match(song.patches, cursor.patch_name) || hd(song.patches)
     end
@@ -221,7 +283,32 @@ defmodule Blister.Cursor do
     Enum.at(row, length(seq2) - 1)
   end
 
-  defp first_of(nil), do: nil
-  defp first_of([]), do: nil
-  defp first_of(list), do: hd(list)
+  # Stop the current patch (which is the "old" patch), move to the specified
+  # patch in the current song, start the new one, and return a new cursor
+  # with the new patch and patch index set.
+  #
+  # `which_patch` must be either :first (the default) or :last.
+  defp move_to_patch(%__MODULE__{song: nil} = cursor, _) do
+    move_to_patch(cursor, nil)
+  end
+  defp move_to_patch(cursor, :first) do
+    move_to_patch(cursor, first_index_of(cursor.song.patches))
+  end
+  defp move_to_patch(cursor, :last) do
+    move_to_patch(cursor, last_index_of(cursor.song.patches))
+  end
+  defp move_to_patch(cursor, patch_index) do
+    Patch.stop(cursor.patch)
+    patch = if patch_index, do: Enum.at(cursor.song.patches, patch_index), else: nil
+    Patch.start(patch)
+    %{cursor | patch_index: patch_index, patch: patch}
+  end
+
+  defp first_index_of(nil), do: nil
+  defp first_index_of([]), do: nil
+  defp first_index_of(xs) when is_list(xs), do: 0
+
+  defp last_index_of(nil), do: nil
+  defp last_index_of([]), do: nil
+  defp last_index_of(xs), do: length(xs) - 1
 end

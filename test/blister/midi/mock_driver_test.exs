@@ -4,6 +4,7 @@ defmodule Blister.MIDI.MockDriverTest do
   require Logger
 
   setup do
+    MD.clear
     on_exit fn -> MD.clear end
   end
 

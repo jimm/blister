@@ -40,7 +40,7 @@ defmodule Blister.DSL do
               messages: messages,
               message_bindings: message_bindings,
               triggers: triggers,
-              all_songs: all_songs,
+              all_songs: %SongList{name: "All Songs", songs: all_songs},
               song_lists: song_lists}
   end
 

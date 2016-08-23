@@ -9,9 +9,9 @@ defmodule Blister.SongList do
   @doc """
   Return the first song that matches `name_regex_str`.
   """
-  def find(%__MODULE__{songs: songs}, name_regex_str) do
+  def find_index(%__MODULE__{songs: songs}, name_regex_str) do
     case Regex.compile(name_regex_str, "i") do
-      {:ok, r} -> Enum.find(songs, fn s -> Regex.match?(r, s.name) end)
+      {:ok, r} -> Enum.find_index(songs, fn s -> Regex.match?(r, s.name) end)
       {:error, _} -> nil
     end
   end

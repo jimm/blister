@@ -9,7 +9,7 @@ defmodule Blister.Pack do
 
   defstruct inputs: %{},        # symbol => {display name, input pid}
     outputs: %{},               # symbol => {display name, output pid}
-    all_songs: [],
+    all_songs: %SongList{name: "All Songs"},
     song_lists: [],
     messages: %{},              # name => bytes
     message_bindings: %{},
@@ -48,22 +48,32 @@ defmodule Blister.Pack do
 
   def next_patch do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.next_patch}
+      %{pack | cursor: pack.cursor |> Cursor.next_patch(pack)}
     end)
   end
   def prev_patch do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.prev_patch}
+      %{pack | cursor: pack.cursor |> Cursor.prev_patch(pack)}
     end)
   end
   def next_song do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.next_song}
+      %{pack | cursor: pack.cursor |> Cursor.next_song(pack)}
     end)
   end
   def prev_song do
     Agent.update(__MODULE__, fn pack ->
-      %{pack | cursor: pack.cursor |> Cursor.prev_song}
+      %{pack | cursor: pack.cursor |> Cursor.prev_song(pack)}
+    end)
+  end
+  def next_song_list do
+    Agent.update(__MODULE__, fn pack ->
+      %{pack | cursor: pack.cursor |> Cursor.next_song_list(pack)}
+    end)
+  end
+  def prev_song_list do
+    Agent.update(__MODULE__, fn pack ->
+      %{pack | cursor: pack.cursor |> Cursor.prev_song_list(pack)}
     end)
   end
 
@@ -71,6 +81,7 @@ defmodule Blister.Pack do
     list = all_songs()
       |> SongList.add_song(song)
       |> SongList.sort_by_name
+    # TODO update cursor if necessary
     Agent.update(__MODULE__, fn pack -> %{pack | all_songs: list} end)
   end
 
@@ -108,4 +119,7 @@ defmodule Blister.Pack do
 
   def bind_code(_code_key) do
   end
+
+  @doc "For testing only."
+  def pack, do: Agent.get(__MODULE__, fn pack -> pack end)
 end

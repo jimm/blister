@@ -57,18 +57,19 @@ defmodule Blister.DSLTest do
   end
 
   test "loads songs", context do
-    songs = context[:pack].all_songs
-    [s1, s2] = songs
-    assert ([s1.name, s2.name]) == ["First Song", "Second Song"]
+    songs = context[:pack].all_songs.songs
+    [s1, s2, s3] = songs
+    assert ([s1.name, s2.name, s3.name]) == ["First Song", "Second Song", "Third Song"]
     assert Regex.match?(~r{Notes about this song\ncan span multiple lines.\n},
       s1.notes)
   end
 
   test "loads patches", context do
-    songs = context[:pack].all_songs
-    [s1, s2] = songs
+    songs = context[:pack].all_songs.songs
+    [s1, s2, s3] = songs
     assert length(s1.patches) == 2
     assert length(s2.patches) == 2
+    assert length(s3.patches) == 1
     patch_names =
       songs
       |> Enum.map(&(&1.patches |> Enum.map(fn p -> p.name end)))
@@ -77,29 +78,30 @@ defmodule Blister.DSLTest do
       "First Song, First Patch",
       "First Song, Second Patch",
       "Second Song, First Patch",
-      "Second Song, Second Patch"
+      "Second Song, Second Patch",
+      "Third Song, First Patch"
     ]
   end
 
   test "loads patch start messages", context do
-    songs = context[:pack].all_songs
+    songs = context[:pack].all_songs.songs
     start_messages =
       songs
       |> Enum.map(&(&1.patches |> Enum.map(fn p -> p.start_messages end)))
-    assert start_messages == [[[{C.tune_request, 0, 0}], []], [[], []]]
+    assert start_messages == [[[{C.tune_request, 0, 0}], []], [[], []], [[]]]
   end
 
   test "loads patch stop messages", context do
-    songs = context[:pack].all_songs
+    songs = context[:pack].all_songs.songs
 
     stop_messages =
       songs
       |> Enum.map(&(&1.patches |> Enum.map(fn p -> p.stop_messages end)))
-    assert stop_messages == [[[], []], [[{C.tune_request, 0, 0}], []]]
+    assert stop_messages == [[[], []], [[{C.tune_request, 0, 0}], []], [[]]]
   end
 
   test "loads connections", context do
-    song = context[:pack].all_songs |> hd
+    song = context[:pack].all_songs.songs |> hd
     patch = song.patches |> hd
     conns = patch.connections
     assert length(conns) == 3
@@ -140,7 +142,7 @@ defmodule Blister.DSLTest do
   end
 
   test "filter functions work", context do
-    song = context[:pack].all_songs |> hd
+    song = context[:pack].all_songs.songs |> hd
     patch = song.patches |> hd
     [_, _, c3] = patch.connections
     f = c3.filter
@@ -151,9 +153,12 @@ defmodule Blister.DSLTest do
   test "loads song lists", context do
     sls = context[:pack].song_lists
     sl_names = sls |> Enum.map(&(&1.name))
-    assert sl_names == ["Tonight's Song List"]
+    assert sl_names == ["Tonight's Song List", "Another Song List"]
 
     song_names = hd(sls).songs |> Enum.map(&(&1.name))
     assert song_names == ["First Song", "Second Song"]
+
+    song_names = hd(tl(sls)).songs |> Enum.map(&(&1.name))
+    assert song_names == ["Third Song", "Second Song"]
   end
 end

@@ -62,10 +62,18 @@
             %{io: {:ws_in, :ws_out, 6},zone: (64..75),
               filter: fn _conn, msg -> msg end} # no-op
           ]},
-        %{name: "Second Song, Second Patch"}]}],
+        %{name: "Second Song, Second Patch"}]},
+    %{name: "Third Song",
+      patches: [%{name: "Third Song, First Patch"}]}
+  ],
   song_lists: [
     %{name: "Tonight's Song List",
       songs: [
         "First Song",
+        "Second Song"
+      ]},
+    %{name: "Another Song List",
+      songs: [
+        "Third Song",
         "Second Song"
       ]}]}

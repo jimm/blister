@@ -92,7 +92,6 @@ defmodule Blister.Controller do
   def command_loop(gui) do
     Logger.debug("command_loop")
     gui.update
-    Logger.debug("command_loop back from GUI.update")
     c = gui.getch
     if c > 0 do
       Logger.debug("key pressed: #{[c]} (#{c})")

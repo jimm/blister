@@ -10,22 +10,22 @@ defmodule Blister.SongListTest do
   end
 
   test "finds song with name", context do
-    assert SongList.find(context[:slist], "he..o") == context[:song]
+    assert SongList.find_index(context[:slist], "he..o") == 1
   end
 
   test "finds song with name case insensitively", context do
-    assert SongList.find(context[:slist], "HE..O") == context[:song]
+    assert SongList.find_index(context[:slist], "HE..O") == 1
   end
 
   test "returns nil with no match", context do
-    assert SongList.find(context[:slist], "nope") == nil
+    assert SongList.find_index(context[:slist], "nope") == nil
   end
 
   test "returns nil with bad regex", context do
-    assert SongList.find(context[:slist], "[") == nil
+    assert SongList.find_index(context[:slist], "[") == nil
   end
 
   test "returns nil with empty list" do
-    assert SongList.find(%SongList{songs: []}, "he..o") == nil
+    assert SongList.find_index(%SongList{songs: []}, "he..o") == nil
   end
 end
