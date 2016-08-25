@@ -18,13 +18,17 @@ defmodule Blister.GUI.Curses.ListWindow do
     %{lwin | win: %{lwin.win | title: title}, list: list, offset: 0}
   end
 
-  def draw(lwin) do
+  def draw(%__MODULE__{list: nil} = lwin) do
     w = lwin.win
     Window.draw(w)
+    lwin
+  end
+  def draw(lwin) do
+    draw(%{lwin | list: nil})
+    w = lwin.win
 
     curr_item = lwin.curr_item_func.()
-    curr_index = lwin.list |> Enum.find_index(fn x -> x == curr_item end)
-
+    curr_index = (lwin.list |> Enum.find_index(fn x -> x == curr_item end)) || 0
     offset = cond do
       curr_index < lwin.offset ->
         curr_index
@@ -40,7 +44,7 @@ defmodule Blister.GUI.Curses.ListWindow do
     |> Enum.each(fn {thing, i} ->
       :cecho.wmove(w.win, i+1, 1)
       if thing == curr_item, do: :cecho.attron(w.win, :cecho_consts.ceA_REVERSE)
-      :cecho.waddstr(w.win, Window.make_fit(w, " #{thing.name} "))
+      :cecho.waddstr(w.win, Window.make_fit(w, " #{thing.name} " |> to_char_list))
       if thing == curr_item, do: :cecho.attroff(w.win, :cecho_consts.ceA_REVERSE)
     end)
     %{lwin | offset: offset}

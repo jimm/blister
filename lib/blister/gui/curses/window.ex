@@ -43,8 +43,8 @@ defmodule Blister.GUI.Curses.Window do
     :cecho.wmove(win, 0, 1)
     :cecho.attron(win, :cecho_consts.ceA_REVERSE)
     :cecho.waddch(win, ?\s)
-    if title_prefix, do: :cecho.waddstr(win, "#{title_prefix}: ")
-    if title, do: :cecho.waddstr(win, title)
+    if title_prefix, do: :cecho.waddstr(win, "#{title_prefix}: " |> to_char_list)
+    if title, do: :cecho.waddstr(win, title |> to_char_list)
     :cecho.waddch(win, ?\s)
     :cecho.attroff(win, :cecho_consts.ceA_REVERSE)
 

@@ -48,8 +48,12 @@ defmodule Blister.GUI.Curses do
     :ok
   end
 
-  def draw_text_win(%Window{win: w} = win, lines) do
+  def draw_text_win(win, nil) do
     Window.draw(win)
+    :ok
+  end
+  def draw_text_win(%Window{win: w} = win, lines) do
+    draw_text_win(win, nil)
     :cecho.wmove(w, 1, 2)
     lines |> Enum.map(fn line ->
       :cecho.waddstr(w, line |> to_char_list)
@@ -160,7 +164,11 @@ defmodule Blister.GUI.Curses do
                }
 
     :cecho.refresh
-    windows |> Map.values |> Enum.map(&:cecho.wrefresh/1)
+#     windows |> Map.values |> Enum.map(fn w ->
+# # ****************
+# Logger.debug "w = #{inspect w}" # DEBUG
+#       # :cecho.wrefresh(w.win)
+#     end)
     # TODO for efficiency: replace the above with the below
     # ([stdscr] + wins).map(&:noutrefresh)
     # Curses.doupdate

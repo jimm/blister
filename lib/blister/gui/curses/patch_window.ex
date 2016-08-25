@@ -16,7 +16,7 @@ defmodule Blister.GUI.Curses.PatchWindow do
 
   def draw(%__MODULE__{win: w, patch: patch} = pwin) do
     Window.draw(w)
-    :cecho.wmove(w, 1, 1)
+    :cecho.wmove(w.win, 1, 1)
     draw_headers(w)
     if patch do
       patch.connections
@@ -31,12 +31,16 @@ defmodule Blister.GUI.Curses.PatchWindow do
   end
 
   def draw_headers(w) do
-    :cecho.attron(w, :cecho_consts.ceA_REVERSE)
-    str = " Input          Chan | Output         Chan | Prog | Zone      | Xpose | Filter"
-    {height, _, _, _} = w.r
-    str <> (List.duplicate(' ', height - 2 - String.length(str)) |> to_string)
-    :cecho.waddstr(w, str)
-    :cecho.attroff(w, :cecho_consts.ceA_REVERSE)
+    :cecho.attron(w.win, :cecho_consts.ceA_REVERSE)
+    chars = ' Input          Chan | Output         Chan | Prog | Zone      | Xpose | Filter'
+    {_, width, _, _} = w.r
+    chars = if length(chars) > width-2 do
+      chars |> Enum.take(width-2)
+    else
+      chars ++ List.duplicate(' ', width - 2 - length(chars))
+    end
+    :cecho.waddstr(w.win, chars)
+    :cecho.attroff(w.win, :cecho_consts.ceA_REVERSE)
   end
 
   def draw_connection(w, connection) do
@@ -70,8 +74,7 @@ defmodule Blister.GUI.Curses.PatchWindow do
       formats |> Enum.join("") |> to_char_list,
       data |> Enum.filter(fn d -> d == nil end) |> Enum.map(&(to_char_list(&1)))
     )
-    str = charlist |> to_string
-    :cecho.waddstr(w, Window.make_fit(w, str))
+    :cecho.waddstr(w.win, Window.make_fit(w, charlist |> to_string))
   end
 
   defp filter_string(nil), do: ""
