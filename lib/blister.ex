@@ -23,37 +23,22 @@ defmodule Blister do
     if Keyword.get(parsed, :list) do
       list(driver_module)
     else
-      gui_module = get_and_init_gui_module(parsed)
-      cmds = Keyword.get(parsed, :cmds)
-      gui_config_func = if gui_module == Blister.GUI.Text && cmds do
-        fn -> Blister.GUI.Text.set_commands(cmds |> to_char_list) end
-      else
-        nil
-      end
-      do_run(load_file, driver_module, gui_module, gui_config_func)
+      do_run(load_file, driver_module)
     end
   end
 
-  defp do_run("test", driver_module, gui_module, gui_config_func) do
-    do_run(nil, driver_module, gui_module, gui_config_func)
+  defp do_run("test", driver_module) do
+    do_run(nil, driver_module)
   end
-  defp do_run(load_file, driver_module, gui_module, gui_config_func) do
+  defp do_run(load_file, driver_module) do
     Logger.info("starting supervisor")
-    result = Blister.Supervisor.start_link(driver_module, gui_module)
+    result = Blister.Supervisor.start_link(driver_module)
     if load_file do
-      Blister.Controller.load_file(load_file)
+      Blister.Pack.load(load_file)
     end
 
-    if gui_config_func do
-      gui_config_func.()
-    end
-
-    Logger.debug("calling start_command_loop")
-    if gui_module do
-      Blister.Controller.start_command_loop
-      receive do
-        :quit -> :ok            # never received, but keeps app running
-      end
+    receive do
+      :quit -> :ok              # never received, but keeps app running
     end
     result
   end
@@ -91,13 +76,5 @@ defmodule Blister do
       Blister.MIDI.MockDriver.start_link
     end
     driver_module
-  end
-
-  defp get_and_init_gui_module(options) do
-    if Keyword.get(options, :text) do
-      Blister.GUI.Text
-    else
-      Application.get_env(:blister, :gui_module)
-    end
   end
 end

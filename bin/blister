@@ -3,7 +3,6 @@
 # usage: blister [--list | --text [--cmds "..."]] [some_blister_file.exs]
 #
 # --list Outputs the list of connected MIDI devices and exits.
-# --text Uses a text-only interface (no curses windows).
 # --cmds "..." sends the characters in the string one by one to Blister.
 #        Normally used only for develompent/debugging.
 
@@ -13,9 +12,6 @@ export MIX_ENV
 
 cd $(dirname $0)/.. >/dev/null
 touch $TMPFILE
-if [ "$MIX_ENV" = "prod" ] ; then
-    elixir --erl -noinput --erl +A10 -S mix run --no-halt $TMPFILE $*
-else
-    elixir -S mix run --no-halt $TMPFILE $*
-fi
+# elixir -S mix run --no-halt $TMPFILE $*
+mix run $TMPFILE $*
 rm -f $TMPFILE

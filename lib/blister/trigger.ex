@@ -21,6 +21,7 @@ defmodule Blister.Trigger do
 
   def do_signal(func) do
     func.()
-    Blister.Pack.gui.update
+    # TODO how notify Web front end?
+    # Blister.Pack.gui.update
   end
 end

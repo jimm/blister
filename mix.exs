@@ -16,14 +16,14 @@ defmodule Blister.Mixfile do
   def application do
     [applications: case Mix.env do
                      :test -> [:logger]
-                     _ -> [:logger, :portmidi]
+                     _ -> [:logger, :portmidi, :trot]
                    end,
      mod: {Blister, []}]
   end
 
   defp deps do
     [{:portmidi, "~> 5.0"},
-     {:cecho, git: "https://github.com/mazenharake/cecho.git"},
-     {:logger_file_backend, "~> 0.0.8"}]
+     {:logger_file_backend, "~> 0.0.8"},
+     {:trot, github: "hexedpackets/trot"}]
   end
 end

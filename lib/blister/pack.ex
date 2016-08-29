@@ -16,7 +16,6 @@ defmodule Blister.Pack do
     triggers: %{},              # symbol => [{bytes, func}, ...]
     code_bindings: %{},
     use_midi: true,
-    gui: nil,
     loaded_file: nil,
     cursor: %Cursor{}
 
@@ -38,13 +37,14 @@ defmodule Blister.Pack do
   def message_bindings, do: Agent.get(__MODULE__, fn pack -> pack.message_bindings end)
   def code_bindings,    do: Agent.get(__MODULE__, fn pack -> pack.code_bindings end)
   def use_midi?,        do: Agent.get(__MODULE__, fn pack -> pack.use_midi end)
-  def gui,              do: Agent.get(__MODULE__, fn pack -> pack.gui end)
   def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
   def cursor,           do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
 
   def song_list, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song_list end)
   def song,      do: Agent.get(__MODULE__, fn pack -> pack.cursor.song end)
   def patch,     do: Agent.get(__MODULE__, fn pack -> pack.cursor.patch end)
+
+  def triggers,  do: Agent.get(__MODULE__, fn pack -> pack.triggers end)
 
   def next_patch do
     Agent.update(__MODULE__, fn pack ->
@@ -96,7 +96,7 @@ defmodule Blister.Pack do
       Logger.debug "init cursor using new pack" # DEBUG
       cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
       Logger.debug "cursor initialized, returning" # DEBUG
-      %{new_pack | cursor: cursor, gui: pack.gui, use_midi: pack.use_midi}
+      %{new_pack | cursor: cursor, use_midi: pack.use_midi}
     end)
   end
 
