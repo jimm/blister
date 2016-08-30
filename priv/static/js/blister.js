@@ -2,6 +2,9 @@ const $ = jQuery
 const CONN_HEADERS = ['Input', 'Chan', 'Output', 'Chan', 'Prog', 'Zone', 'Xpose', 'Filter']
 const CONN_KEYS = ['input', 'input_chan', 'output', 'output_chan', 'pc', 'zone', 'xpose', 'filter']
 const COLOR_SCHEMES = ['default', 'green', 'amber', 'blue']
+const COLOR_BASE_SELECTORS = 'body'
+const COLOR_REVERSE_SELECTORS = '.selected, th, td#appname, #help'
+const COLOR_BORDER_SELECTORS = 'tr, td, th, #help'
 var color_scheme_index = 0
 
 list_item = (val, highlighted_value) => {
@@ -49,17 +52,17 @@ kp = (action) => {
 remove_colors = () => {
   if (color_scheme_index >= 0) {
     base_class = COLOR_SCHEMES[color_scheme_index]
-    $('body').removeClass(base_class)
-    $('.selected, th, td#appname').removeClass(`reverse-${base_class}`)
-    $('tr, td, th').removeClass(`${base_class}-border`)
+    $(COLOR_BASE_SELECTORS).removeClass(base_class)
+    $(COLOR_REVERSE_SELECTORS).removeClass(`reverse-${base_class}`)
+    $(COLOR_BORDER_SELECTORS).removeClass(`${base_class}-border`)
   }
 }
 
 set_colors = () => {
   base_class = COLOR_SCHEMES[color_scheme_index]
-  $('body').addClass(base_class)
-  $('.selected, th, td#appname').addClass(`reverse-${base_class}`)
-  $('tr, td, th').addClass(`${base_class}-border`)
+  $(COLOR_BASE_SELECTORS).addClass(base_class)
+  $(COLOR_REVERSE_SELECTORS).addClass(`reverse-${base_class}`)
+  $(COLOR_BORDER_SELECTORS).addClass(`${base_class}-border`)
 }
 
 cycle_colors = () => {

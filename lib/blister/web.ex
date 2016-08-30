@@ -85,8 +85,6 @@ defmodule Blister.Web do
 
   redirect "/", "/index.html"
 
-  get "/favicon.ico", do: 404
-
   static "/js", "js"
   static "/", ""
 end
