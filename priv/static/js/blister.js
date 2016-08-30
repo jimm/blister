@@ -68,19 +68,29 @@ cycle_colors = () => {
   set_colors()
 }
 
-bindings = {
-  'j': 'next_patch',
-  'down': 'next_patch',
-  'k': 'prev_patch',
-  'up': 'prev_patch',
-  'n': 'next_song',
-  'left': 'next_song',
-  'p': 'prev_song',
-  'right': 'prev_song',
-  'esc': 'panic'
+help = () => {
+  $('#help').toggle()
 }
-for (let key of Object.getOwnPropertyNames(bindings)) {
-  $(document).bind('keydown', key, () => { kp(bindings[key]) })
+
+const PM_BINDINGS = {
+  'j':     'next_patch',
+  'down':  'next_patch',
+  'k':     'prev_patch',
+  'up':    'prev_patch',
+  'n':     'next_song',
+  'right': 'next_song',
+  'p':     'prev_song',
+  'left':  'prev_song',
+  'esc':   'panic'
 }
-$(document).bind('keydown', 'c', () => { cycle_colors() })
+for (let key of Object.getOwnPropertyNames(PM_BINDINGS)) {
+  $(document).bind('keydown', key, () => { kp(PM_BINDINGS[key]) })
+}
+const LOCAL_BINDINGS = {
+  'c': cycle_colors,
+  'h': help
+}
+for (let key of Object.getOwnPropertyNames(LOCAL_BINDINGS)) {
+  $(document).bind('keydown', key, () => { LOCAL_BINDINGS[key]() })
+}
 $(document).ready(() => { kp('status') })

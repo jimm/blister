@@ -26,6 +26,18 @@ table h1, table li, table pre {
   padding: 0 0.5em 0 0.5em;
 }
 
+#help {
+  border: 3px solid #f00;
+  /* TODO FLOAT */
+/*
+  position: relative;
+  left: 20%;
+  top: 20%;
+  width: 60%;
+*/
+  padding: 1em 2em;
+}
+
 /* ================ black on white ================ */
 .default {
   background-color: white;
