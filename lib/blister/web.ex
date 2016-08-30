@@ -1,8 +1,20 @@
 defmodule Blister.Web do
 
   use Trot.Router
-  alias Blister.Pack
+  alias Blister.{Pack, MIDI}
   require Logger
+
+  def start_link do
+    Agent.start_link(fn -> nil end, name: __MODULE__)
+  end
+
+  def visited(endpoint) do
+    Agent.update(__MODULE__, fn _ -> endpoint end)
+  end
+
+  def last_visited do
+    Agent.get(__MODULE__, fn endpoint -> endpoint end)
+  end
 
   def return_status(message \\ nil) do
     sl = Pack.song_list
@@ -53,33 +65,57 @@ defmodule Blister.Web do
   # end
 
   get "/status" do
+    # Don't count as a visit
     return_status()
   end
 
   get "/next_patch" do
     Pack.next_patch()
+    visited :next_patch
     return_status()
   end
 
   get "/prev_patch" do
     Pack.prev_patch()
+    visited :prev_patch
     return_status()
   end
 
   get "/next_song" do
     Pack.next_song()
+    visited :next_song
     return_status()
   end
 
   get "/prev_song" do
     Pack.prev_song()
+    visited :prev_song
+    return_status()
+  end
+
+  get "/next_song_list" do
+    Pack.next_song_list()
+    visited :next_song_list
+    return_status()
+  end
+
+  get "/prev_song_list" do
+    Pack.prev_song_list()
+    visited :prev_song_list
     return_status()
   end
 
   get "/panic" do
     # TODO when panic called twice in a row, call panic(true)
     # TODO write panic
-    # Pack.panic()
+    last_visited_was_panic = last_visited == :panic
+    Logger.debug("panic, spamming all notes = #{last_visited_was_panic}")
+    MIDI.panic(last_visited_was_panic)
+    if last_visited_was_panic do
+      visited :panic_second_time # next panic will not spam all notes
+    else
+      visited :panic
+    end
     return_status()
   end
 

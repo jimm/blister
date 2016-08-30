@@ -11,12 +11,13 @@
   ],
   messages: [
     {"Tune Request", {C.tune_request}},
-    {"Full Volume", (0..15)
+    {"Full Volume", C.midi_channels
       |> Enum.map(fn chan -> {C.controller + chan, C.cc_volume, 127} end)}
   ],
   message_keys: %{f1: "Tune Request",
                   f2: "Full Volume"},
   triggers: [
+    # All on MIDI channel 1
     {:mb, {C.controller, C.cc_gen_purpose_5, 127}, &Pack.next_patch/0},
     {:mb, {C.controller, C.cc_gen_purpose_6, 127}, &Pack.prev_patch/0},
     {:mb, {C.controller, C.cc_gen_purpose_7, 127}, &Pack.next_song/0},

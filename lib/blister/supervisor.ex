@@ -1,6 +1,6 @@
 defmodule Blister.Supervisor do
   use Supervisor
-  alias Blister.{Pack, MIDI}
+  alias Blister.{Pack, MIDI, Web}
 
   def start_link(driver_module) do
     Supervisor.start_link(__MODULE__, driver_module, name: :blister_supervisor)
@@ -8,7 +8,7 @@ defmodule Blister.Supervisor do
 
   def init(driver_module) do
     children =
-      [worker(Pack, []), worker(MIDI, [driver_module])]
+      [worker(Pack, []), worker(MIDI, [driver_module]), worker(Web, [])]
     supervise(children, strategy: :one_for_one)
   end
 

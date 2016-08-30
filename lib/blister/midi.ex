@@ -3,6 +3,7 @@ defmodule Blister.MIDI do
   import Supervisor.Spec
   require Logger
   alias Blister.MIDI.{Input, Output}
+  alias Blister.Consts, as: C
 
   # ================ Server ================
 
@@ -50,6 +51,10 @@ defmodule Blister.MIDI do
     GenServer.call(__MODULE__, {:output, name})
   end
 
+  def panic(spam_every_note) do
+    GenServer.call(__MODULE__, {:panic, spam_every_note})
+  end
+
   def cleanup do
     GenServer.cast(__MODULE__, :cleanup)
   end
@@ -70,6 +75,25 @@ defmodule Blister.MIDI do
 
   def handle_call({:output, name}, _from, state) do
     {:reply, child_pid(state.sup, Output, name), state}
+  end
+
+  def handle_call({:panic, spam_every_note}, _from, state) do
+    messages = if spam_every_note do
+      C.midi_channels |> Enum.map(fn chan ->
+        C.all_notes |> Enum.map(fn note ->
+          {C.note_off(chan), note, 64}
+        end)
+      end)
+      |> List.flatten
+    else
+      C.midi_channels |> Enum.map(fn chan ->
+        {C.controller(chan), C.cm_all_notes_off, 0}
+      end)
+    end
+
+    child_pids(state.sup, Output)
+    |> Enum.map(fn pid -> Output.write(pid, messages) end)
+    {:reply, :ok, state}
   end
 
   def handle_cast(:cleanup, state) do

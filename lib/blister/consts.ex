@@ -1,11 +1,11 @@
 # MIDI and Blister constants.
 defmodule Blister.Consts do
 
-  # Number of MIDI channels
-  def midi_channels, do: 16
+  # Range covering all MIDI channels (1-based).
+  def midi_channels, do: (1..16)
 
-  # Number of note per MIDI channel
-  def notes_per_channel, do: 128
+  # Range covering all note numbers  (0-based).
+  def all_notes, do: (0..127)
 
   #
   # Standard MIDI File meta event defs.
@@ -28,29 +28,29 @@ defmodule Blister.Consts do
   def meta_seq_specif, do: 0x7f
 
   #
-  # Channel messages
+  # Channel messages. All channels are 1-based. Default channel is 1.
   #
 
   # Note, val
-  def note_off, do: 0x80
+  def note_off(chan \\ 1), do: 0x80 + chan - 1
 
   # Note, val
-  def note_on, do: 0x90
+  def note_on(chan \\ 1), do: 0x90 + chan - 1
 
   # Note, val
-  def poly_pressure, do: 0xa0
+  def poly_pressure(chan \\ 1), do: 0xa0 + chan - 1
 
   # Controller #, val
-  def controller, do: 0xb0
+  def controller(chan \\ 1), do: 0xb0 + chan - 1
 
   # Program number
-  def program_change, do: 0xc0
+  def program_change(chan \\ 1), do: 0xc0 + chan - 1
 
   # Channel pressure
-  def channel_pressure, do: 0xd0
+  def channel_pressure(chan \\ 1), do: 0xd0 + chan - 1
 
   # LSB, MSB
-  def pitch_bend, do: 0xe0
+  def pitch_bend(chan \\ 1), do: 0xe0 + chan - 1
 
   #
   # System common messages

@@ -11,19 +11,20 @@
     {"Foo Port 2", :drums, "Drums"}
   ],
   messages: [
-    {"Tune Request", [C.tune_request]},
-    {"Full Volume", (0..15)
-      |> Enum.map(fn chan -> [C.controller + chan, C.cc_volume, 127] end)
+    {"Tune Request", {C.tune_request}},
+    {"Full Volume", C.midi_channels
+      |> Enum.map(fn chan -> {C.controller(chan), C.cc_volume, 127} end)
       |> List.flatten}
   ],
   message_keys: %{f1: "Tune Request",
                   f2: "Full Volume"},
   triggers: [
-    {:mb, [C.controller, C.cc_gen_purpose_5, 127], &Pack.next_patch/0},
-    {:mb, [C.controller, C.cc_gen_purpose_6, 127], &Pack.prev_patch/0},
-    {:mb, [C.controller, C.cc_gen_purpose_7, 127], &Pack.next_song/0},
-    {:mb, [C.controller, C.cc_gen_purpose_8, 127], &Pack.prev_song/0},
-    {:mb, [C.controller, 126, 127], fn -> Pack.send_message("Tune Request") end}
+    # All on MIDI channel 1
+    {:mb, {C.controller, C.cc_gen_purpose_5, 127}, &Pack.next_patch/0},
+    {:mb, {C.controller, C.cc_gen_purpose_6, 127}, &Pack.prev_patch/0},
+    {:mb, {C.controller, C.cc_gen_purpose_7, 127}, &Pack.next_song/0},
+    {:mb, {C.controller, C.cc_gen_purpose_8, 127}, &Pack.prev_song/0},
+    {:mb, {C.controller, 126, 127}, fn -> Pack.send_message("Tune Request") end}
   ],
   songs: [
     %{name: "First Song",

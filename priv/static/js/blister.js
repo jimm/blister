@@ -84,6 +84,8 @@ const PM_BINDINGS = {
   'right': 'next_song',
   'p':     'prev_song',
   'left':  'prev_song',
+  'N':     'next_song_list',
+  'P':     'prev_song_list',
   'esc':   'panic'
 }
 for (let key of Object.getOwnPropertyNames(PM_BINDINGS)) {
