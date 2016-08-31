@@ -66,6 +66,11 @@ defmodule Blister.MIDI.MockDriver do
     GenServer.call(__MODULE__, {:sent_messages, output_name})
   end
 
+  @doc "Testing: clear all input and output messages."
+  def clear_messages do
+    GenServer.call(__MODULE__, :clear_messages)
+  end
+
   @doc "for testing"
   def state, do: GenServer.call(__MODULE__, :state)
 
@@ -82,14 +87,14 @@ defmodule Blister.MIDI.MockDriver do
   end
 
   def handle_call(:devices, _from, state) do
-    devices = %{input: state.inputs
-                  |> Map.keys
-                  |> Enum.map(fn name -> %{name: name} end)
-                  |> Enum.into([]),
-                output: state.outputs
-                  |> Map.keys
-                  |> Enum.map(fn name -> %{name: name} end)
-                  |> Enum.into([])}
+    f = fn ios ->
+      ios
+      |> Map.keys
+      |> Enum.map(fn name -> %{name: name} end)
+      |> Enum.into([])
+    end
+    devices = %{input: f.(state.inputs),
+                output: f.(state.outputs)}
     {:reply, devices, state}
   end
 
@@ -161,6 +166,14 @@ defmodule Blister.MIDI.MockDriver do
 
   def handle_call({:sent_messages, output_name}, _from, state) do
     {:reply, state.outputs[output_name], state}
+  end
+
+  def handle_call(:clear_messages, _from, state) do
+    {:reply, :ok, %{state | 
+                    inputs: %{"input 1" => [], # received messages
+                              "input 2" => []},
+                    outputs: %{"output 1" => [], # sent messages
+                               "output 2" => []}}}
   end
 
   def handle_call(:state, _from, state) do

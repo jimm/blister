@@ -51,6 +51,12 @@ defmodule Blister.MIDI do
     GenServer.call(__MODULE__, {:output, name})
   end
 
+  @doc """
+  Turn off all MIDI notes on all outputs. When `spam_every_note` is false we
+  send the "all notes off" controller message on all 16 MIDI channels. When
+  `spam_every_note` is true, a note off message is sent to every note on all
+  MIDI channels.
+  """
   def panic(spam_every_note) do
     GenServer.call(__MODULE__, {:panic, spam_every_note})
   end
@@ -79,20 +85,15 @@ defmodule Blister.MIDI do
 
   def handle_call({:panic, spam_every_note}, _from, state) do
     messages = if spam_every_note do
-      C.midi_channels |> Enum.map(fn chan ->
-        C.all_notes |> Enum.map(fn note ->
-          {C.note_off(chan), note, 64}
-        end)
-      end)
-      |> List.flatten
+      individual_notes_off()
     else
-      C.midi_channels |> Enum.map(fn chan ->
-        {C.controller(chan), C.cm_all_notes_off, 0}
-      end)
+      all_notes_off()
     end
 
     child_pids(state.sup, Output)
-    |> Enum.map(fn pid -> Output.write(pid, messages) end)
+    |> Enum.map(fn pid ->
+      Output.write(pid, messages)
+    end)
     {:reply, :ok, state}
   end
 
@@ -114,12 +115,16 @@ defmodule Blister.MIDI do
 
   # ================ Helpers ================
 
+  # Return the pids of all children that are of type `mod` (`Input` or
+  # `Output`).
   defp child_pids(sup, mod) do
     Supervisor.which_children(sup)
     |> Enum.filter(fn {_id, _pid, _type, [module]} -> module == mod end)
     |> Enum.map(fn {_id, pid, _type, _modules} -> pid end)
   end
 
+  # Return the pids of the child of type `mod` (`Input` or `Output`) that
+  # has the given `name`.
   defp child_pid(sup, mod, name) do
     pids =
       Supervisor.which_children(sup)
@@ -131,5 +136,18 @@ defmodule Blister.MIDI do
       [h|_] -> h
       _ -> nil
     end
+  end
+
+  defp individual_notes_off do
+    C.midi_channels |> Enum.map(fn chan ->
+      C.all_notes |> Enum.map(fn note -> {C.note_off(chan), note, 64} end)
+    end)
+    |> List.flatten
+  end
+
+  def all_notes_off do
+    C.midi_channels |> Enum.map(fn chan ->
+      {C.controller(chan), C.cm_all_notes_off, 0}
+    end)
   end
 end

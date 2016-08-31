@@ -23,22 +23,24 @@ defmodule Blister do
     if Keyword.get(parsed, :list) do
       list(driver_module)
     else
-      do_run(load_file, driver_module)
+      do_run(load_file, driver_module, Application.get_env(:blister, :use_gui))
     end
   end
 
-  defp do_run("test", driver_module) do
-    do_run(nil, driver_module)
+  defp do_run("test", driver_module, use_gui) do
+    do_run(nil, driver_module, use_gui)
   end
-  defp do_run(load_file, driver_module) do
+  defp do_run(load_file, driver_module, use_gui) do
     Logger.info("starting supervisor")
-    result = Blister.Supervisor.start_link(driver_module)
+    result = Blister.Supervisor.start_link(driver_module, use_gui)
     if load_file do
       Blister.Pack.load(load_file)
     end
 
-    receive do
-      :quit -> :ok              # never received, but keeps app running
+    if use_gui do
+      receive do
+        :quit -> :ok            # never received, but keeps app running
+      end
     end
     result
   end

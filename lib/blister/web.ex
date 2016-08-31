@@ -105,9 +105,10 @@ defmodule Blister.Web do
     return_status()
   end
 
+  # When panic is called it sends the "all notes off" controller message on
+  # all 16 MIDI channels. When it is called a second time in a row, a note
+  # off message is sent to every note on all MIDI channels.
   get "/panic" do
-    # TODO when panic called twice in a row, call panic(true)
-    # TODO write panic
     last_visited_was_panic = last_visited == :panic
     Logger.debug("panic, spamming all notes = #{last_visited_was_panic}")
     MIDI.panic(last_visited_was_panic)

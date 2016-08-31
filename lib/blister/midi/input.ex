@@ -32,7 +32,6 @@ defmodule Blister.MIDI.Input do
 
   @doc "Used internally to process incoming MIDI messages."
   def receive_messages(pid, messages) do
-    Logger.debug "input received messages #{inspect messages}" # DEBUG
     GenServer.call(pid, {:messages, messages})
   end
 
