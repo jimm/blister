@@ -14,7 +14,7 @@ tr, td, th {
   vertical-align: top;
 }
 th {
-  background-color: black;
+  background: black;
   color: white;
   border-right: 1px solid #888;
 }
@@ -25,25 +25,37 @@ td#appname {
 table h1, table li, table pre {
   padding: 0 0.5em 0 0.5em;
 }
-
+#message {
+  position: absolute;
+  bottom: 1em;
+  width: 100%;
+}
 #help {
   display: none;
-  border: 1px solid black;
+  border: 1px solid;
   position: fixed;
   z-index: 1;
   left: 20%;
   top: 20%;
   width: 60%;
-  padding: 0 2em;
+  padding: 0 2em 2em 2em;
+}
+#help .key {
+  text-align: right;
+  font-weight: bold;
+}
+#help tr, #help td, #help th {
+  padding: 0.5em;
+  border: none;
 }
 
 /* ================ black on white ================ */
 .default {
-  background-color: white;
+  background: white;
   color: black;
 }
 .reverse-default {
-  background-color: black;
+  background: black;
   color: white;
 }
 .default-border {
@@ -52,11 +64,11 @@ table h1, table li, table pre {
 
 /* ================ green on black ================ */
 .green {
-  background-color: black;
+  background: black;
   color: #0f0;
 }
 .reverse-green {
-  background-color: #0f0;
+  background: #0f0;
   color: black;
 }
 .green-border {
@@ -65,11 +77,11 @@ table h1, table li, table pre {
 
 /* ================ amber on black ================ */
 .amber {
-  background-color: black;
+  background: black;
   color: #f80;
 }
 .reverse-amber {
-  background-color: #f80;
+  background: #f80;
   color: black;
 }
 .amber-border {
@@ -78,11 +90,11 @@ table h1, table li, table pre {
 
 /* ================ white on blue ================ */
 .blue {
-  background-color: blue;
+  background: blue;
   color: white;
 }
 .reverse-blue {
-  background-color: white;
+  background: white;
   color: blue;
 }
 .blue-border {

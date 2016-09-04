@@ -1,38 +1,42 @@
 const $ = jQuery
 const CONN_HEADERS = ['Input', 'Chan', 'Output', 'Chan', 'Prog', 'Zone', 'Xpose', 'Filter']
-const CONN_KEYS = ['input', 'input_chan', 'output', 'output_chan', 'pc', 'zone', 'xpose', 'filter']
+const CONN_KEYS = ['input', 'input_chan', 'output', 'output_chan', 'prog', 'zone', 'xpose', 'filter']
 const COLOR_SCHEMES = ['default', 'green', 'amber', 'blue']
-const COLOR_BASE_SELECTORS = 'body'
-const COLOR_REVERSE_SELECTORS = '.selected, th, td#appname, #help'
-const COLOR_BORDER_SELECTORS = 'tr, td, th, #help'
+const COLOR_BASE_SELECTORS = 'body, #help, #message'
+const COLOR_REVERSE_SELECTORS = '.selected, th, td#appname'
+const COLOR_BORDER_SELECTORS = 'tr, td, th'
 var color_scheme_index = 0
 
-list_item = (val, highlighted_value) => {
+function list_item(val, highlighted_value) {
   classes = val == highlighted_value ? `selected reverse-${COLOR_SCHEMES[color_scheme_index]}` : ''
   return `<li class=\"${classes}\">${val}</li>`
 }
 
-list = (id, vals, highlighted_value) => {
+function list(id, vals, highlighted_value) {
   let lis = vals.map(val => { return list_item(val, highlighted_value) })
   $('#' + id).html(lis.join("\n"))
 }
 
-connection_row = (conn) => {
+function connection_row(conn) {
   let vals = CONN_KEYS.map(key => { return conn[key] })
   return `<tr><td>${vals.join('</td><td>')}</td></tr>`
 }
 
-connection_rows = (connections) => {
+function connection_rows(connections) {
   rows = connections.map(conn => { return connection_row(conn) })
   $('#patch').html(`<tr><th>${CONN_HEADERS.join("</th><th>")}</th></tr>\n${rows.join("\n")}`)
   set_colors()
 }
 
-maybe_name = (data, key) => { return data[key] ? data[key]['name'] : '' }
+function maybe_name(data, key) {
+  return data[key] ? data[key]['name'] : ''
+}
 
-message = (str) => { $('#message').html(str) }
+function message(str) {
+  $('#message-text').html(str)
+}
 
-kp = (action) => {
+function kp(action) {
   $.getJSON(action, (data) => {
     list('song-lists', data['lists'], data['list'])
     list('songs', data['songs'], maybe_name(data, 'song'))
@@ -44,12 +48,11 @@ kp = (action) => {
         connection_rows(data['patch']['connections'])
     }
 
-    if (data['message'])
-      message(data['message'])
+    message(data['message'] || '&nbsp;')
   })
 }
 
-remove_colors = () => {
+function remove_colors() {
   if (color_scheme_index >= 0) {
     base_class = COLOR_SCHEMES[color_scheme_index]
     $(COLOR_BASE_SELECTORS).removeClass(base_class)
@@ -58,24 +61,29 @@ remove_colors = () => {
   }
 }
 
-set_colors = () => {
+function set_colors() {
   base_class = COLOR_SCHEMES[color_scheme_index]
   $(COLOR_BASE_SELECTORS).addClass(base_class)
   $(COLOR_REVERSE_SELECTORS).addClass(`reverse-${base_class}`)
   $(COLOR_BORDER_SELECTORS).addClass(`${base_class}-border`)
 }
 
-cycle_colors = () => {
+function cycle_colors() {
   remove_colors()
   color_scheme_index = (color_scheme_index + 1) % COLOR_SCHEMES.length
   set_colors()
 }
 
-help = () => {
+function toggle_help() {
   $('#help').toggle()
 }
 
-const PM_BINDINGS = {
+function panic_sent_message() {
+  console.log("Panic!")
+  message("Panic!")
+}
+
+const API_BINDINGS = {
   'j':     'next_patch',
   'down':  'next_patch',
   'k':     'prev_patch',
@@ -86,14 +94,15 @@ const PM_BINDINGS = {
   'left':  'prev_song',
   'N':     'next_song_list',
   'P':     'prev_song_list',
-  'esc':   'panic'
+  'esc':   'panic',
+  'l':     'load'
 }
-for (let key of Object.getOwnPropertyNames(PM_BINDINGS)) {
-  $(document).bind('keydown', key, () => { kp(PM_BINDINGS[key]) })
+for (let key of Object.getOwnPropertyNames(API_BINDINGS)) {
+  $(document).bind('keydown', key, () => { kp(API_BINDINGS[key]) })
 }
 const LOCAL_BINDINGS = {
   'c': cycle_colors,
-  'h': help
+  'h': toggle_help
 }
 for (let key of Object.getOwnPropertyNames(LOCAL_BINDINGS)) {
   $(document).bind('keydown', key, () => { LOCAL_BINDINGS[key]() })

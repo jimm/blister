@@ -44,13 +44,20 @@ defmodule Blister.Web do
       input_chan: conn.input.chan,
       output: conn.output.sym,
       output_chan: conn.output.chan,
-      bank_msb: inspect(conn.bank_msb || ""), # TODO draw in HTML
-      bank_lsb: inspect(conn.bank_lsb || ""), # TODO draw in HTML
-      pc: inspect(conn.pc_prog || ""),
-      zone: inspect(conn.zone || ""),
-      xpose: inspect(conn.xpose || ""),
-      filter: inspect(conn.filter || "")}
+      prog: program_change_string(conn.bank_msb, conn.bank_lsb, conn.pc_prog),
+      zone: (if conn.zone, do: inspect(conn.zone)),
+      xpose: (if conn.xpose, do: inspect(conn.xpose)),
+      filter: (if conn.filter, do: inspect(conn.filter))}
   end
+
+  defp program_change_string(nil, nil, nil), do: ""
+  defp program_change_string(nil, nil, pc), do: pc
+  defp program_change_string(nil, lsb, nil), do: "[#{lsb}]"
+  defp program_change_string(nil, lsb, pc), do: "[#{lsb}] #{pc}"
+  defp program_change_string(msb, nil, nil), do: "[#{msb}]"
+  defp program_change_string(msb, nil, pc), do: "[#{msb}] #{pc}"
+  defp program_change_string(msb, lsb, nil), do: "[#{msb}-#{lsb}]"
+  defp program_change_string(msb, lsb, pc), do: "[#{msb}-#{lsb}] #{pc}"
 
 # ================================================================
 # URL handlers
@@ -109,7 +116,7 @@ defmodule Blister.Web do
   # all 16 MIDI channels. When it is called a second time in a row, a note
   # off message is sent to every note on all MIDI channels.
   get "/panic" do
-    last_visited_was_panic = last_visited == :panic
+    last_visited_was_panic = last_visited() == :panic
     Logger.debug("panic, spamming all notes = #{last_visited_was_panic}")
     MIDI.panic(last_visited_was_panic)
     if last_visited_was_panic do
@@ -117,7 +124,12 @@ defmodule Blister.Web do
     else
       visited :panic
     end
-    return_status()
+    msg = if last_visited_was_panic do
+      "Panic: sent note off to every note on all MIDI channels"
+    else
+      "Panic: sent note off message on all MIDI channels"
+    end
+    return_status(msg)
   end
 
   redirect "/", "/index.html"
