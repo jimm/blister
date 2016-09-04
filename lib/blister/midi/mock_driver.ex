@@ -4,11 +4,12 @@ defmodule Blister.MIDI.MockDriver do
 
   # ================ API ================
 
-  def start_link do
-    state = %{inputs: %{"input 1" => [], # received messages
-                        "input 2" => []},
-              outputs: %{"output 1" => [], # sent messages
-                         "output 2" => []},
+  def start_link(input_names \\ ["input 1", "input 2"], output_names \\ ["output 1", "output 2"]) do
+    # inputs and outputs map names to received/sent messages
+    inputs = input_names |> Enum.map(fn s -> {s, []} end) |> Enum.into(%{})
+    outputs = output_names |> Enum.map(fn s -> {s, []} end) |> Enum.into(%{})
+    state = %{inputs: inputs, outputs: outputs,
+              orig_inputs: inputs, orig_outputs: outputs,
               input_refs: %{},  # maps ref to input name
               output_refs: %{}, # maps ref to output name
               listeners: %{}}
@@ -76,11 +77,9 @@ defmodule Blister.MIDI.MockDriver do
 
   # ================ Handlers ================
 
-  def handle_call(:clear, _from, _state) do
-    {:reply, :ok, %{inputs: %{"input 1" => [], # received messages
-                              "input 2" => []},
-                    outputs: %{"output 1" => [], # sent messages
-                               "output 2" => []},
+  def handle_call(:clear, _from, state) do
+    {:reply, :ok, %{inputs: state.orig_inputs, outputs: state.orig_outputs,
+                    orig_inputs: state.orig_inputs, orig_outputs: state.orig_outputs,
                     input_refs: %{},  # maps ref to input name
                     output_refs: %{}, # maps ref to output name
                     listeners: %{}}}
@@ -170,10 +169,8 @@ defmodule Blister.MIDI.MockDriver do
 
   def handle_call(:clear_messages, _from, state) do
     {:reply, :ok, %{state | 
-                    inputs: %{"input 1" => [], # received messages
-                              "input 2" => []},
-                    outputs: %{"output 1" => [], # sent messages
-                               "output 2" => []}}}
+                    inputs: state.orig_inputs,
+                    outputs: state.orig_outputs}}
   end
 
   def handle_call(:state, _from, state) do
