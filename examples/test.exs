@@ -12,7 +12,7 @@
   messages: [
     {"Tune Request", {C.tune_request}},
     {"Full Volume", C.midi_channels
-      |> Enum.map(fn chan -> {C.controller + chan, C.cc_volume, 127} end)}
+      |> Enum.map(fn chan -> {C.controller(chan), C.cc_volume, 127} end)}
   ],
   message_keys: %{f1: "Tune Request",
                   f2: "Full Volume"},

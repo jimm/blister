@@ -4,7 +4,7 @@ defmodule Blister.DSL do
   """
 
   alias Blister.{Pack, Connection, Song, Patch, MIDI, SongList}
-  alias Blister.Connection.CIO
+  alias Blister.Connection.ConnIO
 
   @import "import Blister.Pack, except: [start_link: 1, load: 1, save: 1, reload: 0]\n"
 
@@ -170,8 +170,8 @@ defmodule Blister.DSL do
     with {_, in_pid} when is_pid(in_pid) <- Map.get(inputs, in_sym),
          {_, out_pid} when is_pid(out_pid) <- Map.get(outputs, out_sym) do
       in_ch = if in_ch_or_nil, do: in_ch_or_nil-1, else: nil
-      [%CIO{sym: in_sym, pid: in_pid, chan: in_ch},
-       %CIO{sym: out_sym, pid: out_pid, chan: out_ch-1}]
+      [%ConnIO{sym: in_sym, pid: in_pid, chan: in_ch},
+       %ConnIO{sym: out_sym, pid: out_pid, chan: out_ch-1}]
     else
       {_, nil} -> {:error, "input #{in_sym} or output #{out_sym} not found"}
     end

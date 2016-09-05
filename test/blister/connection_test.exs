@@ -2,14 +2,14 @@ defmodule Blister.ConnectionTest do
   use ExUnit.Case
   doctest Blister.Connection
   alias Blister.Connection
-  alias Blister.Connection.CIO
+  alias Blister.Connection.ConnIO
   alias Blister.Predicates, as: P
   alias Blister.Consts, as: C
 
   setup do
     conn = %Connection{
-      input: %CIO{sym: :in_sym, chan: 4},
-      output: %CIO{sym: :out_sym, chan: 4},
+      input: %ConnIO{sym: :in_sym, chan: 4},
+      output: %ConnIO{sym: :out_sym, chan: 4},
       filter: fn _, {b0, b1, b2} = msg ->
         if P.note?(msg), do: {b0, b1, max(0, b2-1)}, else: msg end,
       zone: (64..75),

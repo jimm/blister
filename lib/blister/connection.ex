@@ -8,11 +8,11 @@ defmodule Blister.Connection do
   `output`.
   """
 
-  defmodule CIO do
+  defmodule ConnIO do
     defstruct [:sym, :pid, :chan]
   end
 
-  defstruct [:input, :output,   # CIO structs
+  defstruct [:input, :output,   # ConnIO structs
              :filter, :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
 
   use Bitwise
@@ -20,6 +20,10 @@ defmodule Blister.Connection do
   alias Blister.Consts, as: C
   alias Blister.Predicates, as: P
 
+  @doc """
+  Tell `conn`'s input to start sending messages to this connection and send
+  `start_messages` plus bank and program changes to all outputs.
+  """
   def start(conn, start_messages \\ []) do
     Input.add_connection(conn.input.pid, conn)
     messages = start_messages
@@ -29,16 +33,12 @@ defmodule Blister.Connection do
       messages
     end
     messages = if conn.bank_lsb do
-      [{C.controller + conn.output.chan,
-        C.cc_bank_select_lsb + conn.output.chan,
-        conn.bank_lsb} | messages]
+      [{C.controller(conn.output.chan), C.cc_bank_select_lsb, conn.bank_lsb} | messages]
     else
       messages
     end
     messages = if conn.bank_msb do
-      [{C.controller + conn.output.chan,
-        C.cc_bank_select_msb + conn.output.chan,
-        conn.bank_msb} | messages]
+      [{C.controller(conn.output.chan), C.cc_bank_select_msb, conn.bank_msb} | messages]
     else
       messages
     end
@@ -137,7 +137,7 @@ defmodule Blister.Connection do
 
   def midi_out(_, nil), do: nil
   def midi_out(_, []), do: nil
-  def midi_out(%__MODULE__{output: %CIO{pid: nil}}, _), do: nil
+  def midi_out(%__MODULE__{output: %ConnIO{pid: nil}}, _), do: nil
   def midi_out(%__MODULE__{output: output}, messages) do
     Output.write(output.pid, messages)
   end
