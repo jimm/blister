@@ -1,6 +1,6 @@
 defmodule Blister.Song do
   defstruct name: "Unnamed",
-    patches: [],
+    patch_pids: [],
     notes: ""
 
   def create(name) do

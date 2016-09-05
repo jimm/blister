@@ -1,7 +1,6 @@
 defmodule Blister.DSL do
   @moduledoc """
   This module is responsible for loading and saving Blister.Pack data.
-  State is a tuple containing {pack, song, patch}.
   """
 
   alias Blister.{Pack, Connection, Song, Patch, MIDI, SongList}
@@ -89,9 +88,9 @@ defmodule Blister.DSL do
 
   defp parse_songs([], _, _, songs), do: {:ok, Enum.reverse(songs)}
   defp parse_songs([s|t], inputs, outputs, songs) do
-    with {:ok, patches} <- parse_patches(Map.get(s, :patches, []), inputs, outputs, [])
+    with {:ok, patch_pids} <- parse_patches(Map.get(s, :patches, []), inputs, outputs, [])
     do
-      song = %Song{name: s.name, patches: patches, notes: Map.get(s, :notes)}
+      song = %Song{name: s.name, patch_pids: patch_pids, notes: Map.get(s, :notes)}
       parse_songs(t, inputs, outputs, [song | songs])
     end
   end
@@ -108,7 +107,14 @@ defmodule Blister.DSL do
     parse_song_lists(t, all_songs, [song_list | song_lists])
   end
 
-  defp parse_patches([], _, _, patches), do: {:ok, Enum.reverse(patches)}
+  defp parse_patches([], _, _, patches) do
+    pids =
+      Enum.reverse(patches)
+      |> Enum.map(fn patch ->
+        with {:ok, pid} = Patch.start_link(patch), do: pid
+      end)
+    {:ok, pids}
+  end
   defp parse_patches([p|t], inputs, outputs, patches) do
     with {:ok, conns} <- (get_any(p, [:connections, :conns], [])
                          |> parse_connections(inputs, outputs, []))

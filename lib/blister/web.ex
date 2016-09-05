@@ -1,7 +1,7 @@
 defmodule Blister.Web do
 
   use Trot.Router
-  alias Blister.{Pack, MIDI}
+  alias Blister.{Pack, Patch, MIDI}
   require Logger
 
   def start_link do
@@ -23,7 +23,7 @@ defmodule Blister.Web do
       songs: sl.songs |> Enum.map(fn sl -> sl.name end),
       triggers: [],             # TODO
       song: song_map(Pack.song),
-      patch: patch_map(Pack.patch),
+      patch: patch_map(Pack.patch_pid),
       message: message}
   end
 
@@ -34,9 +34,9 @@ defmodule Blister.Web do
   end
 
   defp patch_map(nil), do: nil
-  defp patch_map(patch) do
-    %{name: patch.name,
-      connections: patch.connections |> Enum.map(fn conn -> conn_map(conn) end)}
+  defp patch_map(patch_pid) do
+    %{name: Patch.name(patch_pid),
+      connections: Patch.connections(patch_pid) |> Enum.map(fn conn -> conn_map(conn) end)}
   end
 
   defp conn_map(conn) do

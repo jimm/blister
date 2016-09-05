@@ -61,11 +61,11 @@ defmodule Blister.MIDI.Input do
 
   # ================ PortMidi listener ================
 
-  def loop({portmidi_input_pid, app_input_pid}) do
+  def loop({portmidi_input_pid, app_input_pid} = state) do
     receive do
       {^portmidi_input_pid, messages} ->
         receive_messages(app_input_pid, messages)
-        loop({portmidi_input_pid, app_input_pid})
+        loop(state)
       {:set_state, state} ->
         loop(state)
       :stop ->

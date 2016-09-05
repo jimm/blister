@@ -42,7 +42,7 @@ defmodule Blister.Pack do
 
   def song_list, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song_list end)
   def song,      do: Agent.get(__MODULE__, fn pack -> pack.cursor.song end)
-  def patch,     do: Agent.get(__MODULE__, fn pack -> pack.cursor.patch end)
+  def patch_pid, do: Agent.get(__MODULE__, fn pack -> pack.cursor.patch_pid end)
 
   def triggers,  do: Agent.get(__MODULE__, fn pack -> pack.triggers end)
 

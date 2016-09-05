@@ -1,6 +1,6 @@
 defmodule Blister.DSLTest do
   use ExUnit.Case
-  alias Blister.{DSL, Pack, MIDI, Connection}
+  alias Blister.{DSL, Pack, Patch, MIDI, Connection}
   alias Blister.Connection.CIO
   alias Blister.Consts, as: C
 
@@ -64,15 +64,15 @@ defmodule Blister.DSLTest do
       s1.notes)
   end
 
-  test "loads patches", context do
+  test "loads patch pids", context do
     songs = context[:pack].all_songs.songs
     [s1, s2, s3] = songs
-    assert length(s1.patches) == 2
-    assert length(s2.patches) == 2
-    assert length(s3.patches) == 1
+    assert length(s1.patch_pids) == 2
+    assert length(s2.patch_pids) == 2
+    assert length(s3.patch_pids) == 1
     patch_names =
       songs
-      |> Enum.map(&(&1.patches |> Enum.map(fn p -> p.name end)))
+      |> Enum.map(&(&1.patch_pids |> Enum.map(fn pid -> Patch.name(pid) end)))
       |> List.flatten
     assert patch_names == [
       "First Song, First Patch",
@@ -87,7 +87,7 @@ defmodule Blister.DSLTest do
     songs = context[:pack].all_songs.songs
     start_messages =
       songs
-      |> Enum.map(&(&1.patches |> Enum.map(fn p -> p.start_messages end)))
+      |> Enum.map(&(&1.patch_pids |> Enum.map(fn pid -> Patch.start_messages(pid) end)))
     assert start_messages == [[[{C.tune_request, 0, 0}], []], [[], []], [[]]]
   end
 
@@ -96,14 +96,15 @@ defmodule Blister.DSLTest do
 
     stop_messages =
       songs
-      |> Enum.map(&(&1.patches |> Enum.map(fn p -> p.stop_messages end)))
+      |> Enum.map(&(&1.patch_pids |> Enum.map(fn pid -> Patch.stop_messages(pid) end)))
     assert stop_messages == [[[], []], [[{C.tune_request, 0, 0}], []], [[]]]
   end
 
   test "loads connections", context do
-    song = context[:pack].all_songs.songs |> hd
-    patch = song.patches |> hd
-    conns = patch.connections
+    conns = with song = context[:pack].all_songs.songs |> hd,
+                 patch_pid = song.patch_pids |> hd do
+              Patch.connections(patch_pid)
+            end
     assert length(conns) == 3
 
     [c1, c2, c3] = conns
@@ -143,8 +144,8 @@ defmodule Blister.DSLTest do
 
   test "filter functions work", context do
     song = context[:pack].all_songs.songs |> hd
-    patch = song.patches |> hd
-    [_, _, c3] = patch.connections
+    patch_pid = song.patch_pids |> hd
+    [_, _, c3] = Patch.connections(patch_pid)
     f = c3.filter
     assert f.(c3, {0, 0, 0}) == {0, 0, 0}
     assert f.(c3, {0x83, 64, 100}) == {0x83, 64, 99}

@@ -10,7 +10,7 @@ defmodule Blister.Cursor do
 
   defstruct song_list_index: 0, song_list: [],
     song_index: 0, song: nil,
-    patch_index: 0, patch: nil,
+    patch_pid_index: 0, patch_pid: nil,
     song_list_name: nil,
     song_name: nil,
     patch_name: nil
@@ -28,11 +28,11 @@ defmodule Blister.Cursor do
   """
   def next_patch(%__MODULE__{song: nil} = cursor), do: cursor
   def next_patch(cursor, pack) do
-    new_patch_index = cursor.patch_index + 1
-    if new_patch_index >= length(cursor.song.patches) do
+    new_patch_pid_index = cursor.patch_pid_index + 1
+    if new_patch_pid_index >= length(cursor.song.patch_pids) do
       next_song(cursor, pack)
     else
-      move_to_patch(cursor, new_patch_index)
+      move_to_patch(cursor, new_patch_pid_index)
     end
   end
 
@@ -43,11 +43,11 @@ defmodule Blister.Cursor do
   """
   def prev_patch(%__MODULE__{song: nil} = cursor), do: cursor
   def prev_patch(cursor, pack) do
-    new_patch_index = cursor.patch_index - 1
-    if new_patch_index < 0 do
+    new_patch_pid_index = cursor.patch_pid_index - 1
+    if new_patch_pid_index < 0 do
       prev_song(cursor, pack, :last)
     else
-      move_to_patch(cursor, new_patch_index)
+      move_to_patch(cursor, new_patch_pid_index)
     end
   end
 
@@ -186,12 +186,12 @@ defmodule Blister.Cursor do
       cursor
     else
       song = first_index_of(new_song_list.songs)
-      patch = if song, do: first_index_of(song.patches), else: nil
-      if patch != cursor.patch do
-        Patch.stop(cursor.patch)
-        Patch.start(patch)
+      patch_pid = if song, do: first_index_of(song.patch_pids), else: nil
+      if patch_pid != cursor.patch_pid do
+        Patch.stop(cursor.patch_pid)
+        Patch.start(patch_pid)
       end
-      %{cursor | song_list: new_song_list, song: song, patch: patch}
+      %{cursor | song_list: new_song_list, song: song, patch_pid: patch_pid}
     end
   end
 
@@ -202,7 +202,7 @@ defmodule Blister.Cursor do
   def mark(cursor) do
     %{cursor | song_list_name: (if cursor.song_list, do: cursor.song_list.name),
       song_name: (if cursor.song, do: cursor.song.name),
-      patch_name: (if cursor.patch, do: cursor.patch.name)}
+      patch_name: (if cursor.patch_pid, do: Patch.name(cursor.patch_pid))}
   end
 
   @doc """
@@ -215,11 +215,11 @@ defmodule Blister.Cursor do
   def restore(cursor, pack) do
     song_list = find_nearest_match(pack.song_lists, cursor.song_list_name) || pack.all_songs
     song = find_nearest_match(song_list.songs, cursor.song_name) || first_index_of(song_list.songs)
-    patch = if song do
-      find_nearest_match(song.patches, cursor.patch_name) || hd(song.patches)
+    patch_pid = if song do
+      find_nearest_match(song.patch_pids, cursor.patch_name) || hd(song.patch_pids)
     end
 
-    %{cursor | song_list: song_list, song: song, patch: patch}
+    %{cursor | song_list: song_list, song: song, patch_pid: patch_pid}
   end
 
   def find_nearest_match(nil, _), do: nil
@@ -292,16 +292,18 @@ defmodule Blister.Cursor do
     move_to_patch(cursor, nil)
   end
   defp move_to_patch(cursor, :first) do
-    move_to_patch(cursor, first_index_of(cursor.song.patches))
+    move_to_patch(cursor, first_index_of(cursor.song.patch_pids))
   end
   defp move_to_patch(cursor, :last) do
-    move_to_patch(cursor, last_index_of(cursor.song.patches))
+    move_to_patch(cursor, last_index_of(cursor.song.patch_pids))
   end
-  defp move_to_patch(cursor, patch_index) do
-    Patch.stop(cursor.patch)
-    patch = if patch_index, do: Enum.at(cursor.song.patches, patch_index), else: nil
-    Patch.start(patch)
-    %{cursor | patch_index: patch_index, patch: patch}
+  defp move_to_patch(cursor, patch_pid_index) do
+    Patch.stop(cursor.patch_pid)
+    patch_pid = if patch_pid_index do
+      Enum.at(cursor.song.patch_pids, patch_pid_index)
+    end
+    Patch.start(patch_pid)
+    %{cursor | patch_pid_index: patch_pid_index, patch_pid: patch_pid}
   end
 
   defp first_index_of(nil), do: nil

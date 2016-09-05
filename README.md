@@ -43,6 +43,5 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 # To Do
 
 - Triggers and messages can take either lists of messages or functions
-- Fix examples/example.exs format
 - Better names for IO, at least in config files
-- App needs to accept file name to read on start
+- Remove "use_midi"

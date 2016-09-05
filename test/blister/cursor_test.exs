@@ -1,7 +1,7 @@
 defmodule Blister.CursorTest do
   use ExUnit.Case
   doctest Blister.Cursor
-  alias Blister.{Cursor, Pack}
+  alias Blister.{Cursor, Pack, Patch}
 
   @testfile "examples/test.exs"
 
@@ -16,7 +16,7 @@ defmodule Blister.CursorTest do
     c = %Cursor{} |> Cursor.init(%{song_lists: []})
     assert c.song_list == []
     assert c.song == nil
-    assert c.patch == nil
+    assert c.patch_pid == nil
   end
 
   @tag :initialization
@@ -168,6 +168,6 @@ defmodule Blister.CursorTest do
                             1 -> "#{expected_song_name}, First Patch"
                             2 -> "#{expected_song_name}, Second Patch"
                           end
-    assert cursor.patch.name == expected_patch_name
+    assert Patch.name(cursor.patch_pid) == expected_patch_name
   end
 end
