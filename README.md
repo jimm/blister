@@ -12,36 +12,34 @@ messages, limit controller and velocity values, and much more. At the stomp
 of a foot switch (or any other MIDI event), an entire MIDI system can be
 totally reconfigured.
 
-For more information please see the
-[Blister Web site](http://www.blister.org/) or, if you're offline, the
-[site source files](site/index.md).
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-  1. Add `blister` to your list of dependencies in `mix.exs`:
-
-    ```elixir
-    def deps do
-      [{:blister, "~> 0.1.0"}]
-    end
-    ```
-
-  2. Ensure `blister` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:blister]]
-    end
-    ```
-
 ## About
 
 Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
+
+## Installation
+
+Blister requires [PortMidi](http://portmedia.sourceforge.net/portmidi/).
+I use MacPorts. Here's how I compiled and installed PortMidi:
+
+```sh
+sudo port install portmidi
+sudo ln -s /opt/local/include/portmidi.h /usr/local/include
+sudo ln -s /opt/local/lib/libportmidi.dylib /usr/local/lib
+sudo ln -s /opt/local/lib/libportmidi_s.a /usr/local/lib
+```
+
+You can try setting the `CPATH`, `LIBRARY_PATH`, and `LD_LIBRARY_PATH`
+environment variables to point to the MacPorts files in /opt/local instead
+of creating soft links, but I had better luck doing the latter.
+
+## Running
+
+Execute the shell script `bin/blister`, optionally specifying a file to
+load. Open your browser to http://localhost:4000.
 
 # To Do
 
 - Triggers and messages can take either lists of messages or functions
 - Better names for IO, at least in config files
 - Remove "use_midi"
+- Better handle DSL errors
