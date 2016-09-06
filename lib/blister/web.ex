@@ -30,7 +30,7 @@ defmodule Blister.Web do
   defp song_map(nil), do: nil
   defp song_map(song) do
     %{name: song.name,
-      patches: song.patches |> Enum.map(fn p -> p.name end)}
+      patches: song.patch_pids |> Enum.map(fn pid -> Patch.name(pid) end)}
   end
 
   defp patch_map(nil), do: nil

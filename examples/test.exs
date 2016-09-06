@@ -44,7 +44,7 @@
             %{io: {:ws_in, :ws_out, 4},
               bank_msb: 2, program: 100,
               filter: fn _conn, {b0, b1, b2} = msg ->
-                if P.note_off?(msg) do
+                if P.note_on?(msg) do
                   {b0, b1, max(0, b2-1)} # decrease velocity by 1
                 else
                   msg

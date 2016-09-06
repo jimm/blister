@@ -43,3 +43,4 @@ load. Open your browser to http://localhost:4000.
 - Better names for IO, at least in config files
 - Remove "use_midi"
 - Better handle DSL errors
+- How should filters be displayed?
