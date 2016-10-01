@@ -148,7 +148,7 @@ defmodule Blister.DSLTest do
     [_, _, c3] = Patch.connections(patch_pid)
     f = c3.filter
     assert f.(c3, {0, 0, 0}) == {0, 0, 0}
-    assert f.(c3, {0x83, 64, 100}) == {0x83, 64, 99}
+    assert f.(c3, {0x93, 64, 100}) == {0x93, 64, 99}
   end
 
   test "loads song lists", context do
