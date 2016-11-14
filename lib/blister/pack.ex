@@ -15,7 +15,6 @@ defmodule Blister.Pack do
     message_bindings: %{},
     triggers: %{},              # symbol => [{bytes, func}, ...]
     code_bindings: %{},
-    use_midi: true,
     loaded_file: nil,
     cursor: %Cursor{}
 
@@ -36,7 +35,6 @@ defmodule Blister.Pack do
   def messages,         do: Agent.get(__MODULE__, fn pack -> pack.messages end)
   def message_bindings, do: Agent.get(__MODULE__, fn pack -> pack.message_bindings end)
   def code_bindings,    do: Agent.get(__MODULE__, fn pack -> pack.code_bindings end)
-  def use_midi?,        do: Agent.get(__MODULE__, fn pack -> pack.use_midi end)
   def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
   def cursor,           do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
 
@@ -92,9 +90,9 @@ defmodule Blister.Pack do
   def load(file) do
     Logger.debug("load file #{file}")
     new_pack = DSL.load(file)
-    Agent.update(__MODULE__, fn pack ->
+    Agent.update(__MODULE__, fn _ ->
       cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
-      %{new_pack | cursor: cursor, use_midi: pack.use_midi}
+      %{new_pack | cursor: cursor}
     end)
   end
 

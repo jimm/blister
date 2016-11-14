@@ -62,9 +62,8 @@ defmodule Blister.Connection do
     midi_in(conn, [messages])
   end
   def midi_in(conn, messages) do
-    messages
-    |> Stream.map(&process(conn, &1))
-    |> Stream.each(&midi_out(conn, &1))
+    process(conn, messages)
+    |> Enum.each(&midi_out(conn, &1))
   end
 
   @doc """

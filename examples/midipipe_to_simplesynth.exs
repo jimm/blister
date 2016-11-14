@@ -17,11 +17,11 @@
                   f2: "Full Volume"},
   triggers: [
     # All on MIDI channel 1
-    {:mb, {C.controller, C.cc_gen_purpose_5, 127}, &Pack.next_patch/0},
-    {:mb, {C.controller, C.cc_gen_purpose_6, 127}, &Pack.prev_patch/0},
-    {:mb, {C.controller, C.cc_gen_purpose_7, 127}, &Pack.next_song/0},
-    {:mb, {C.controller, C.cc_gen_purpose_8, 127}, &Pack.prev_song/0},
-    {:mb, {C.controller, 126, 127}, fn -> Pack.send_message("Tune Request") end}
+    {:mp, {C.controller, C.cc_gen_purpose_5, 127}, &Pack.next_patch/0},
+    {:mp, {C.controller, C.cc_gen_purpose_6, 127}, &Pack.prev_patch/0},
+    {:mp, {C.controller, C.cc_gen_purpose_7, 127}, &Pack.next_song/0},
+    {:mp, {C.controller, C.cc_gen_purpose_8, 127}, &Pack.prev_song/0},
+    {:mp, {C.controller, 126, 127}, fn -> Pack.send_message("Tune Request") end}
   ],
   songs: [
     %{name: "First Song",

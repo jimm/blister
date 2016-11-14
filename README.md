@@ -41,6 +41,5 @@ load. Open your browser to http://localhost:4000.
 
 - Triggers and messages can take either lists of messages or functions
 - Better names for IO, at least in config files
-- Remove "use_midi"
 - Better handle DSL errors
 - How should filters be displayed?
