@@ -89,11 +89,17 @@ defmodule Blister.Pack do
 
   def load(file) do
     Logger.debug("load file #{file}")
-    new_pack = DSL.load(file)
-    Agent.update(__MODULE__, fn _ ->
-      cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
-      %{new_pack | cursor: cursor}
-    end)
+    result = DSL.load(file)
+    case result do
+      {:error, _} ->
+        result
+      new_pack ->
+        Agent.update(__MODULE__, fn _ ->
+          cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
+          %{new_pack | cursor: cursor}
+        end)
+        result
+    end
   end
 
   def save(file) do

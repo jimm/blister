@@ -34,14 +34,18 @@ defmodule Blister do
     Logger.info("starting supervisor")
     result = Blister.Supervisor.start_link(driver_module, use_gui)
     if load_file do
-      Blister.Pack.load(load_file)
-    end
-
-    if use_gui do
-      receive do
-        :quit -> :ok            # never received, but keeps app running
+      case Blister.Pack.load(load_file) do
+        {:error, message} ->
+          IO.puts message
+        _ ->
+          if use_gui do
+            receive do
+              :quit -> :ok      # never received, but keeps app running
+            end
+          end
       end
     end
+
     result
   end
 

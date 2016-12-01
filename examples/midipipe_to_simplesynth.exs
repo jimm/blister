@@ -1,10 +1,7 @@
 %{inputs: [
-    {"IAC Driver Bus 1", :mac, "MacOS"},
     {"MidiPipe Output 1", :mp, "MidiPipe"}
   ],
   outputs: [
-    {"IAC Driver Bus 1", :mac, "MacOS"},
-    {"MidiPipe Input 1", :mp, "MidiPipe"},
     {"SimpleSynth virtual input", :ss, "SimpleSynth"},
   ],
   messages: [
@@ -34,7 +31,7 @@
           start_bytes: [C.tune_request],
           connections: [
             %{io: {:mp, :ss, 1},
-              prog_chg: 64, zone: (64..75), xpose: 12},
+              prog_chg: 64, zone: (64..75), xpose: 0},
           ]},
         %{name: "First Song, Second Patch"}
       ]},
@@ -44,7 +41,7 @@
         %{name: "Second Song, First Patch",
           connections: [
             %{io: {:mp, :ss, 1},
-              prog_chg: 64, zone: (64..75), xpose: 12},
+              prog_chg: 63, zone: (64..75), xpose: 12},
           ]}]},
     %{name: "Second Song, Second Patch"}],
   song_lists: [
