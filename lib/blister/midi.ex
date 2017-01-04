@@ -9,10 +9,12 @@ defmodule Blister.MIDI do
 
   def start_link(driver_module) do
     devices = driver_module.devices
+    # Some devices have spaces at the end of their names. I'm looking at
+    # you, M-Audio MIDISPORT 4x4.
     input_workers =
-      devices.input  |> Enum.map(&(worker(Input, [driver_module, &1.name], id: make_ref())))
+      devices.input  |> Enum.map(&(worker(Input, [driver_module, String.trim(&1.name)], id: make_ref())))
     output_workers =
-      devices.output |> Enum.map(&(worker(Output, [driver_module, &1.name], id: make_ref())))
+      devices.output |> Enum.map(&(worker(Output, [driver_module, String.trim(&1.name)], id: make_ref())))
     children = input_workers ++ output_workers
 
     {:ok, sup} = Supervisor.start_link(children, strategy: :one_for_one)

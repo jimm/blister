@@ -49,7 +49,10 @@ defmodule Blister.DSL do
   end
   defp parse_inputs([{port, sym, name}|t], inputs) do
     in_pid = MIDI.input(port)
-    parse_inputs(t, inputs |> Map.put(sym, {name, in_pid}))
+    # Some MIDI device names have trailing spaces. We remove them when
+    # creating Inputs. Just in case the user also knows this, remove them
+    # here as well.
+    parse_inputs(t, inputs |> Map.put(sym, {String.trim(name), in_pid}))
   end
 
   defp parse_outputs([], outputs), do: {:ok, outputs}
@@ -58,7 +61,7 @@ defmodule Blister.DSL do
   end
   defp parse_outputs([{port, sym, name}|t], outputs) do
     out_pid = MIDI.output(port)
-    parse_outputs(t, outputs |> Map.put(sym, {name, out_pid}))
+    parse_outputs(t, outputs |> Map.put(sym, {String.trim(name), out_pid}))
   end
 
   defp parse_messages([], messages), do: {:ok, messages}
