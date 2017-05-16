@@ -42,11 +42,11 @@ defmodule Blister.Connection do
     else
       messages
     end
-    Enum.each(messages, &midi_out(conn, {&1, 0}))
+    midi_out(conn, messages)
   end
 
   def stop(conn, stop_messages \\ []) do
-    Enum.each(stop_messages, &midi_out(conn, {&1, 0}))
+    midi_out(conn, stop_messages)
     Input.remove_connection(conn.input.pid, conn)
   end
 
@@ -58,30 +58,32 @@ defmodule Blister.Connection do
   Note that running status bytes are not handled, but PortMidi doesn't seem
   to use them anyway.
   """
-  def midi_in(conn, messages) when is_tuple(messages) do
-    midi_in(conn, [messages])
+  def midi_in(conn, message) when is_tuple(message) do
+    midi_in(conn, [message])
   end
-  def midi_in(conn, messages) do
-    process(conn, messages)
-    |> Enum.each(&midi_out(conn, &1))
+  def midi_in(conn, messages) when is_list(messages) do
+    midi_out(conn, process(conn, messages) |> Enum.to_list)
   end
 
   @doc """
   Takes `messages`, removes timestamps, filters out messages that don't
   qualify (wrong channel or out of zone, for example), then munges them by
-  transposing, running through filter func, etc.
+  transposing, running through filter func, etc. Returns a Stream.
 
   This is only public so we can test it.
   """
   def process(conn, messages) do
     messages
-    |> Stream.map(&remove_timestamp/1)
     |> Stream.filter(&accept_from_input?(conn, &1))
     |> Stream.map(&munge(conn, &1))
   end
 
-  defp remove_timestamp({{_, _, _}, t} = msg) when is_integer(t), do: msg
-  defp remove_timestamp({_, _, _} = msg), do: msg
+  def midi_out(_, nil), do: nil
+  def midi_out(_, []), do: nil
+  def midi_out(%__MODULE__{output: %ConnIO{pid: nil}}, _), do: nil
+  def midi_out(%__MODULE__{output: %ConnIO{pid: pid}}, messages) do
+    Output.write(pid, messages)
+  end
 
   defp accept_from_input?(conn, message) do
     cond do
@@ -132,12 +134,5 @@ defmodule Blister.Connection do
   defp munge_chan_message(conn, {status, b1, b2}) do
     status = (status &&& 0xf0) + conn.output.chan
     {status, b1, b2}
-  end
-
-  def midi_out(_, nil), do: nil
-  def midi_out(_, []), do: nil
-  def midi_out(%__MODULE__{output: %ConnIO{pid: nil}}, _), do: nil
-  def midi_out(%__MODULE__{output: output}, messages) do
-    Output.write(output.pid, messages)
   end
 end

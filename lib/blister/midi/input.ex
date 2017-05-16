@@ -48,7 +48,8 @@ defmodule Blister.MIDI.Input do
   def handle_call({:messages, []}, _from, state) do
     {:reply, :ok, state}
   end
-  def handle_call({:messages, messages}, _from, state) do
+  def handle_call({:messages, messages}, _from, state) when is_list(messages) do
+    messages = messages |> Enum.map(&remove_timestamp/1)
     state.connections |> Enum.map(&(Blister.Connection.midi_in(&1, messages)))
     {:reply, :ok, state}
   end
@@ -58,6 +59,11 @@ defmodule Blister.MIDI.Input do
     :ok = close(state)
     {:stop, :normal, nil}
   end
+
+  # ================ Helpers ================
+
+  defp remove_timestamp({{_, _, _}, t} = msg) when is_integer(t), do: msg
+  defp remove_timestamp({_, _, _} = msg), do: msg
 
   # ================ PortMidi listener ================
 
