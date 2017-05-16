@@ -177,8 +177,8 @@ defmodule Blister.MIDI.MockDriver do
     {:reply, state, state}
   end
 
-  def terminate(reason, state) do
+  def terminate(reason, _state) do
     Logger.info("mock driver terminate")
-    if state != :shutdown, do: Logger.info("mock driver reason #{inspect reason}")
+    if reason != :shutdown, do: Logger.info("mock driver reason #{inspect reason}")
   end
 end

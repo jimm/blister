@@ -28,7 +28,7 @@ defmodule Blister.Connection do
     Input.add_connection(conn.input.pid, conn)
     messages = start_messages
     messages = if conn.pc_prog do
-      [{C.program_change + conn.output.chan, conn.pc_prog} | messages]
+      [{C.program_change + conn.output.chan, conn.pc_prog, 0} | messages]
     else
       messages
     end
@@ -42,11 +42,11 @@ defmodule Blister.Connection do
     else
       messages
     end
-    midi_out(conn, messages)
+    Enum.each(messages, &midi_out(conn, {&1, 0}))
   end
 
   def stop(conn, stop_messages \\ []) do
-    midi_out(conn, stop_messages)
+    Enum.each(stop_messages, &midi_out(conn, {&1, 0}))
     Input.remove_connection(conn.input.pid, conn)
   end
 

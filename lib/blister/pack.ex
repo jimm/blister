@@ -98,7 +98,6 @@ defmodule Blister.Pack do
           cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
           %{new_pack | cursor: cursor}
         end)
-        result
     end
   end
 

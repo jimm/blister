@@ -1,10 +1,8 @@
 #!/bin/bash
 #
-# usage: blister [--list | --text [--cmds "..."]] [some_blister_file.exs]
+# usage: blister [--list | --text [--cmds "..."]] [--help] [some_blister_file.exs]
 #
-# --list Outputs the list of connected MIDI devices and exits.
-# --cmds "..." sends the characters in the string one by one to Blister.
-#        Normally used only for develompent/debugging.
+# Run "blister --help" to see a description of the options.
 
 TMPFILE=/tmp/$$.exs
 MIX_ENV=${MIX_ENV:-prod}
@@ -13,5 +11,5 @@ export MIX_ENV
 cd $(dirname $0)/.. >/dev/null
 touch $TMPFILE
 # elixir -S mix run --no-halt $TMPFILE $*
-mix run $TMPFILE $*
+mix run --no-halt $TMPFILE $*
 rm -f $TMPFILE

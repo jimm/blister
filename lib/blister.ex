@@ -5,14 +5,17 @@ defmodule Blister do
   def start(_type, _args) do
     {parsed, args, invalid} =
       OptionParser.parse(System.argv,
-        switches: [list: :boolean, text: :boolean, cmds: :string],
-        aliases: [l: :list, t: :text, c: :cmds])
+        switches: [list: :boolean, text: :boolean, cmds: :string, help: :boolean],
+        aliases: [l: :list, t: :text, c: :cmds, h: :help])
     load_file = case args do
                   [] -> nil
                   [f|_] -> f
                 end
-    if length(invalid) > 0 do
+    if Keyword.get(parsed, :help) || length(invalid) > 0 do
+      IO.puts "calling usage with invalid #{inspect invalid}" # DEBUG
       usage(invalid)
+      :init.stop
+      {:ok, self()}
     else
       run(parsed, load_file)
     end
@@ -60,14 +63,15 @@ defmodule Blister do
     {:ok, self()}
   end
 
-  defp usage(nil) do
+  defp usage([]) do
     IO.puts """
-    usage: blister [--list | --text [--cmds "..."]] [some_blister_file.exs]
+    usage: blister [--list | --text [--cmds "..."]] [--help] [some_blister_file.exs]
 
     --list, -l   Outputs the list of connected MIDI devices and exits.
     --text, -t   Uses a text-only interface (no curses windows).
     --cmds, -c   "..." sends the characters in the string one by one to Blister.
                  Normally used only for develompent/debugging.
+    --help, -h   This help.
     """
   end
   defp usage(invalid) do

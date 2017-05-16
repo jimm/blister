@@ -38,6 +38,13 @@ function message(str) {
 
 function kp(action) {
   $.getJSON(action, (data) => {
+    console.log(data)
+    if (data == null) {
+      message("Error talking to Blister server")
+      alert("There was a problem talking to Blister server. Is it running?")
+      return;
+    }
+
     list('song-lists', data['lists'], data['list'])
     list('songs', data['songs'], maybe_name(data, 'song'))
     list('triggers', data['triggers'])
