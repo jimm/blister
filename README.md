@@ -39,6 +39,8 @@ load. Open your browser to http://localhost:4000.
 
 # To Do
 
+- Pack can be a regular struct, doesn't need to be an Agent. Only cursor
+  needs to be an agent
 - Triggers and messages can take either lists of messages or functions
 - Better names for IO, at least in config files
 - Better handle DSL errors
