@@ -1,6 +1,10 @@
 defmodule Blister.Predicates do
   @moduledoc """
   Predicate functions and a few other PortMidi message utility functions.
+
+  The predication functions that look at status bytes (for example,
+  `channel?` or `note_on?` ignore data byte values. They do not check to see
+  if the data bytes are legal 7-bit values.
   """
 
   use Bitwise
@@ -8,18 +12,6 @@ defmodule Blister.Predicates do
   @doc """
   Returns true if message or status is a channel (non-system) message or
   status.
-
-  iex> Blister.Predicates.channel?({0x80, 0, 0})
-  true
-
-  iex> Blister.Predicates.channel?({0xef, 0, 0})
-  true
-
-  iex> Blister.Predicates.channel?(0xc8)
-  true
-
-  iex> Blister.Predicates.channel?({0xf0, 0, 0})
-  false
   """
   def channel?({b, _, _}) when b >= 0x80 and b < 0xf0, do: true
   def channel?(b) when is_integer(b) and b >= 0x80 and b < 0xf0, do: true
@@ -28,18 +20,6 @@ defmodule Blister.Predicates do
   @doc """
   Returns true if message or status byte is a note (note on, note off, poly
   pressure).
-
-  iex> Blister.Predicates.note?({0x80, 0, 0})
-  true
-
-  iex> Blister.Predicates.note?({0xaf, 0, 0})
-  true
-
-  iex> Blister.Predicates.note?(0x92)
-  true
-
-  iex> Blister.Predicates.note?({0xb0, 0, 0})
-  false
   """
   def note?({b, _, _}) when b >= 0x80 and b < 0xb0, do: true
   def note?(b) when is_integer(b) and  b >= 0x80 and b < 0xb0, do: true
@@ -78,9 +58,6 @@ defmodule Blister.Predicates do
   status byte.
 
   iex> Blister.Predicates.channel({0x94, 0, 0})
-  4
-
-  iex> Blister.Predicates.channel(0x94)
   4
   """
   def channel({status, _, _}) when status >= 0x80 and status < 0xf0, do: status &&& 0x0f
