@@ -1,5 +1,4 @@
 defmodule Blister.Web do
-
   use Trot.Router
   alias Blister.{Pack, Patch, MIDI}
   require Logger
@@ -17,37 +16,46 @@ defmodule Blister.Web do
   end
 
   def return_status(message \\ nil) do
-    sl = Pack.song_list
-    %{lists: Pack.song_lists |> Enum.map(fn sl -> sl.name end),
+    sl = Pack.song_list()
+
+    %{
+      lists: Pack.song_lists() |> Enum.map(fn sl -> sl.name end),
       list: sl.name,
       songs: sl.songs |> Enum.map(fn sl -> sl.name end),
-      triggers: [],             # TODO
-      song: song_map(Pack.song),
-      patch: patch_map(Pack.patch_pid),
-      message: message}
+      # TODO
+      triggers: [],
+      song: song_map(Pack.song()),
+      patch: patch_map(Pack.patch_pid()),
+      message: message
+    }
   end
 
   defp song_map(nil), do: nil
+
   defp song_map(song) do
-    %{name: song.name,
-      patches: song.patch_pids |> Enum.map(fn pid -> Patch.name(pid) end)}
+    %{name: song.name, patches: song.patch_pids |> Enum.map(fn pid -> Patch.name(pid) end)}
   end
 
   defp patch_map(nil), do: nil
+
   defp patch_map(patch_pid) do
-    %{name: Patch.name(patch_pid),
-      connections: Patch.connections(patch_pid) |> Enum.map(fn conn -> conn_map(conn) end)}
+    %{
+      name: Patch.name(patch_pid),
+      connections: Patch.connections(patch_pid) |> Enum.map(fn conn -> conn_map(conn) end)
+    }
   end
 
   defp conn_map(conn) do
-    %{input: conn.input.sym,
+    %{
+      input: conn.input.sym,
       input_chan: conn.input.chan,
       output: conn.output.sym,
       output_chan: conn.output.chan,
       prog: program_change_string(conn.bank_msb, conn.bank_lsb, conn.pc_prog),
-      zone: (if conn.zone, do: inspect(conn.zone)),
-      xpose: (if conn.xpose, do: inspect(conn.xpose)),
-      filter: (if conn.filter, do: inspect(conn.filter))}
+      zone: if(conn.zone, do: inspect(conn.zone)),
+      xpose: if(conn.xpose, do: inspect(conn.xpose)),
+      filter: if(conn.filter, do: inspect(conn.filter))
+    }
   end
 
   defp program_change_string(nil, nil, nil), do: ""
@@ -59,9 +67,9 @@ defmodule Blister.Web do
   defp program_change_string(msb, lsb, nil), do: "[#{msb}-#{lsb}]"
   defp program_change_string(msb, lsb, pc), do: "[#{msb}-#{lsb}] #{pc}"
 
-# ================================================================
-# URL handlers
-# ================================================================
+  # ================================================================
+  # URL handlers
+  # ================================================================
 
   # not_found do
   #   path = request.env["REQUEST_PATH"]
@@ -78,37 +86,37 @@ defmodule Blister.Web do
 
   get "/next_patch" do
     Pack.next_patch()
-    visited :next_patch
+    visited(:next_patch)
     return_status()
   end
 
   get "/prev_patch" do
     Pack.prev_patch()
-    visited :prev_patch
+    visited(:prev_patch)
     return_status()
   end
 
   get "/next_song" do
     Pack.next_song()
-    visited :next_song
+    visited(:next_song)
     return_status()
   end
 
   get "/prev_song" do
     Pack.prev_song()
-    visited :prev_song
+    visited(:prev_song)
     return_status()
   end
 
   get "/next_song_list" do
     Pack.next_song_list()
-    visited :next_song_list
+    visited(:next_song_list)
     return_status()
   end
 
   get "/prev_song_list" do
     Pack.prev_song_list()
-    visited :prev_song_list
+    visited(:prev_song_list)
     return_status()
   end
 
@@ -119,21 +127,26 @@ defmodule Blister.Web do
     last_visited_was_panic = last_visited() == :panic
     Logger.debug("panic, spamming all notes = #{last_visited_was_panic}")
     MIDI.panic(last_visited_was_panic)
+
     if last_visited_was_panic do
-      visited :panic_second_time # next panic will not spam all notes
+      # next panic will not spam all notes
+      visited(:panic_second_time)
     else
-      visited :panic
+      visited(:panic)
     end
-    msg = if last_visited_was_panic do
-      "Panic: sent note off to every note on all MIDI channels"
-    else
-      "Panic: sent note off message on all MIDI channels"
-    end
+
+    msg =
+      if last_visited_was_panic do
+        "Panic: sent note off to every note on all MIDI channels"
+      else
+        "Panic: sent note off message on all MIDI channels"
+      end
+
     return_status(msg)
   end
 
-  redirect "/", "/index.html"
+  redirect("/", "/index.html")
 
-  static "/js", "js"
-  static "/", ""
+  static("/js", "js")
+  static("/", "")
 end

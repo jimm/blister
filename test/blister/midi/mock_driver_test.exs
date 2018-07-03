@@ -4,14 +4,14 @@ defmodule Blister.MIDI.MockDriverTest do
   require Logger
 
   setup do
-    MD.clear
-    on_exit fn -> MD.clear end
+    MD.clear()
+    on_exit(fn -> MD.clear() end)
   end
 
   test "devices" do
-    ds = MD.devices
-    assert (ds.input |> Enum.map(&(&1.name))) == ["input 1", "input 2"]
-    assert (ds.output |> Enum.map(&(&1.name))) == ["output 1", "output 2"]
+    ds = MD.devices()
+    assert ds.input |> Enum.map(& &1.name) == ["input 1", "input 2"]
+    assert ds.output |> Enum.map(& &1.name) == ["output 1", "output 2"]
   end
 
   test "logs sent messages" do
@@ -41,11 +41,12 @@ defmodule Blister.MIDI.MockDriverTest do
     receive do
       {^inp, ^msgs} ->
         :ok
+
       msg ->
-        flunk("received #{inspect msg}; expected message(s) #{inspect msgs}")
+        flunk("received #{inspect(msg)}; expected message(s) #{inspect(msgs)}")
     after
       1000 ->
-        flunk("error: did not receive expected message(s) #{inspect msgs}")
+        flunk("error: did not receive expected message(s) #{inspect(msgs)}")
     end
   end
 end

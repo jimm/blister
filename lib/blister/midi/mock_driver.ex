@@ -1,5 +1,4 @@
 defmodule Blister.MIDI.MockDriver do
-
   require Logger
 
   # ================ API ================
@@ -8,11 +7,19 @@ defmodule Blister.MIDI.MockDriver do
     # inputs and outputs map names to received/sent messages
     inputs = input_names |> Enum.map(fn s -> {s, []} end) |> Enum.into(%{})
     outputs = output_names |> Enum.map(fn s -> {s, []} end) |> Enum.into(%{})
-    state = %{inputs: inputs, outputs: outputs,
-              orig_inputs: inputs, orig_outputs: outputs,
-              input_refs: %{},  # maps ref to input name
-              output_refs: %{}, # maps ref to output name
-              listeners: %{}}
+
+    state = %{
+      inputs: inputs,
+      outputs: outputs,
+      orig_inputs: inputs,
+      orig_outputs: outputs,
+      # maps ref to input name
+      input_refs: %{},
+      # maps ref to output name
+      output_refs: %{},
+      listeners: %{}
+    }
+
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
@@ -78,35 +85,40 @@ defmodule Blister.MIDI.MockDriver do
   # ================ Handlers ================
 
   def handle_call(:clear, _from, state) do
-    {:reply, :ok, %{inputs: state.orig_inputs, outputs: state.orig_outputs,
-                    orig_inputs: state.orig_inputs, orig_outputs: state.orig_outputs,
-                    input_refs: %{},  # maps ref to input name
-                    output_refs: %{}, # maps ref to output name
-                    listeners: %{}}}
+    {:reply, :ok,
+     %{
+       inputs: state.orig_inputs,
+       outputs: state.orig_outputs,
+       orig_inputs: state.orig_inputs,
+       orig_outputs: state.orig_outputs,
+       # maps ref to input name
+       input_refs: %{},
+       # maps ref to output name
+       output_refs: %{},
+       listeners: %{}
+     }}
   end
 
   def handle_call(:devices, _from, state) do
     f = fn ios ->
       ios
-      |> Map.keys
+      |> Map.keys()
       |> Enum.map(fn name -> %{name: name} end)
       |> Enum.into([])
     end
-    devices = %{input: f.(state.inputs),
-                output: f.(state.outputs)}
+
+    devices = %{input: f.(state.inputs), output: f.(state.outputs)}
     {:reply, devices, state}
   end
 
   def handle_call({:open, :input, name}, _from, state) do
     ref = make_ref()
-    {:reply, {:ok, ref}, %{state |
-                           input_refs: Map.put(state.input_refs, ref, name)}}
+    {:reply, {:ok, ref}, %{state | input_refs: Map.put(state.input_refs, ref, name)}}
   end
 
   def handle_call({:open, :output, name}, _from, state) do
     ref = make_ref()
-    {:reply, {:ok, ref}, %{state |
-                           output_refs: Map.put(state.output_refs, ref, name)}}
+    {:reply, {:ok, ref}, %{state | output_refs: Map.put(state.output_refs, ref, name)}}
   end
 
   def handle_call({:close, :input, _pid}, _from, state) do
@@ -120,15 +132,17 @@ defmodule Blister.MIDI.MockDriver do
   def handle_call({:listen, in_pid, listener}, _from, state) do
     listeners =
       state.listeners
-      |> Map.update(in_pid, [listener], fn ls -> [listener|ls] end)
+      |> Map.update(in_pid, [listener], fn ls -> [listener | ls] end)
+
     {:reply, :ok, %{state | listeners: listeners}}
   end
 
   def handle_call({:write, out_pid, messages}, _from, state) do
-    messages = case messages do
-                 ms when is_list(ms) -> ms
-                 ms -> [ms]
-               end
+    messages =
+      case messages do
+        ms when is_list(ms) -> ms
+        ms -> [ms]
+      end
 
     # Find output and append messages to sent messages for that output
     # out_pid is really a ref we generated with a call to open(:output, name)
@@ -149,10 +163,12 @@ defmodule Blister.MIDI.MockDriver do
       send(listener, {in_pid, messages})
     end)
 
-    messages = case messages do
-                 ms when is_list(ms) -> ms
-                 ms -> [ms]
-               end
+    messages =
+      case messages do
+        ms when is_list(ms) -> ms
+        ms -> [ms]
+      end
+
     name = state.input_refs[in_pid]
     inputs = state.inputs |> Map.update(name, messages, &(&1 ++ messages))
 
@@ -168,9 +184,7 @@ defmodule Blister.MIDI.MockDriver do
   end
 
   def handle_call(:clear_messages, _from, state) do
-    {:reply, :ok, %{state | 
-                    inputs: state.orig_inputs,
-                    outputs: state.orig_outputs}}
+    {:reply, :ok, %{state | inputs: state.orig_inputs, outputs: state.orig_outputs}}
   end
 
   def handle_call(:state, _from, state) do
@@ -179,6 +193,6 @@ defmodule Blister.MIDI.MockDriver do
 
   def terminate(reason, _state) do
     Logger.info("mock driver terminate")
-    if reason != :shutdown, do: Logger.info("mock driver reason #{inspect reason}")
+    if reason != :shutdown, do: Logger.info("mock driver reason #{inspect(reason)}")
   end
 end

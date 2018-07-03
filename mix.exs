@@ -6,8 +6,8 @@ defmodule Blister.Mixfile do
       app: :blister,
       version: "0.1.0",
       elixir: "~> 1.6",
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
@@ -17,10 +17,11 @@ defmodule Blister.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: case Mix.env do
-                      :test -> [:logger]
-                      _ -> [:logger, :portmidi, :trot]
-                    end,
+      applications:
+        case Mix.env() do
+          :test -> [:logger]
+          _ -> [:logger, :portmidi, :trot]
+        end,
       mod: {Blister, []}
     ]
   end

@@ -1,16 +1,15 @@
 # MIDI and Blister constants.
 defmodule Blister.Consts do
-
   # Range covering all MIDI channels (1-based).
-  def midi_channels, do: (1..16)
+  def midi_channels, do: 1..16
 
   # Range covering all note numbers  (0-based).
-  def all_notes, do: (0..127)
+  def all_notes, do: 0..127
 
   #
   # Standard MIDI File meta event defs.
   #
-  def meta_event, do: 0xff
+  def meta_event, do: 0xFF
   def meta_seq_num, do: 0x00
   def meta_text, do: 0x01
   def meta_copyright, do: 0x02
@@ -20,12 +19,12 @@ defmodule Blister.Consts do
   def meta_marker, do: 0x06
   def meta_cue, do: 0x07
   def meta_midi_chan_prefix, do: 0x20
-  def meta_track_end, do: 0x2f
+  def meta_track_end, do: 0x2F
   def meta_set_tempo, do: 0x51
   def meta_smpte, do: 0x54
   def meta_time_sig, do: 0x58
   def meta_patch_sig, do: 0x59
-  def meta_seq_specif, do: 0x7f
+  def meta_seq_specif, do: 0x7F
 
   #
   # Channel messages. All channels are 1-based. Default channel is 1.
@@ -38,60 +37,60 @@ defmodule Blister.Consts do
   def note_on(chan \\ 1), do: 0x90 + chan - 1
 
   # Note, val
-  def poly_pressure(chan \\ 1), do: 0xa0 + chan - 1
+  def poly_pressure(chan \\ 1), do: 0xA0 + chan - 1
 
   # Controller #, val
-  def controller(chan \\ 1), do: 0xb0 + chan - 1
+  def controller(chan \\ 1), do: 0xB0 + chan - 1
 
   # Program number
-  def program_change(chan \\ 1), do: 0xc0 + chan - 1
+  def program_change(chan \\ 1), do: 0xC0 + chan - 1
 
   # Channel pressure
-  def channel_pressure(chan \\ 1), do: 0xd0 + chan - 1
+  def channel_pressure(chan \\ 1), do: 0xD0 + chan - 1
 
   # LSB, MSB
-  def pitch_bend(chan \\ 1), do: 0xe0 + chan - 1
+  def pitch_bend(chan \\ 1), do: 0xE0 + chan - 1
 
   #
   # System common messages
   #
 
   # System exclusive start
-  def sysex, do: 0xf0
+  def sysex, do: 0xF0
 
   # Beats from top: LSB/MSB 6 ticks = 1 beat
-  def song_pointer, do: 0xf2
+  def song_pointer, do: 0xF2
 
   # Val = number of song
-  def song_select, do: 0xf3
+  def song_select, do: 0xF3
 
   # Tune request
-  def tune_request, do: 0xf6
+  def tune_request, do: 0xF6
 
   # End of system exclusive
-  def eox, do: 0xf7
+  def eox, do: 0xF7
 
   #
   # System realtime messages
   #
 
   # MIDI clock (24 per quarter note)
-  def clock, do: 0xf8
+  def clock, do: 0xF8
 
   # Sequence start
-  def start, do: 0xfa
+  def start, do: 0xFA
 
   # Sequence continue
-  def continue, do: 0xfb
+  def continue, do: 0xFB
 
   # Sequence stop
-  def stop, do: 0xfc
+  def stop, do: 0xFC
 
   # Active sensing (sent every 300 ms when nothing else being sent)
-  def active_sense, do: 0xfe
+  def active_sense, do: 0xFE
 
   # System reset
-  def system_reset, do: 0xff
+  def system_reset, do: 0xFF
 
   #
   # Controller numbers
@@ -175,12 +174,17 @@ defmodule Blister.Consts do
   #
   # Val 0 == off, 0x7f == on
   def cm_reset_all_controllers, do: 0x79
-  def cm_local_control, do: 0x7a
-  def cm_all_notes_off, do: 0x7b # val must be 0
-  def cm_omni_mode_off, do: 0x7c # val must be 0
-  def cm_omni_mode_on, do: 0x7d  # val must be 0
-  def cm_mono_mode_on, do: 0x7e  # val = # chans
-  def cm_poly_mode_on, do: 0x7f  # val must be 0
+  def cm_local_control, do: 0x7A
+  # val must be 0
+  def cm_all_notes_off, do: 0x7B
+  # val must be 0
+  def cm_omni_mode_off, do: 0x7C
+  # val must be 0
+  def cm_omni_mode_on, do: 0x7D
+  # val = # chans
+  def cm_mono_mode_on, do: 0x7E
+  # val must be 0
+  def cm_poly_mode_on, do: 0x7F
 
   @controller_names [
     "Bank Select (MSB)",
@@ -195,14 +199,26 @@ defmodule Blister.Consts do
     "9 (MSB)",
     "Pan (MSB)",
     "Expression Control (MSB)",
-    "12 (MSB)", "13 (MSB)", "14 (MSB)", "15 (MSB)",
+    "12 (MSB)",
+    "13 (MSB)",
+    "14 (MSB)",
+    "15 (MSB)",
     "General Controller 1 (MSB)",
     "General Controller 2 (MSB)",
     "General Controller 3 (MSB)",
     "General Controller 4 (MSB)",
-    "20 (MSB)", "21 (MSB)", "22 (MSB)", "23 (MSB)", "24 (MSB)", "25 (MSB)",
-    "26 (MSB)", "27 (MSB)", "28 (MSB)", "29 (MSB)", "30 (MSB)", "31 (MSB)",
-
+    "20 (MSB)",
+    "21 (MSB)",
+    "22 (MSB)",
+    "23 (MSB)",
+    "24 (MSB)",
+    "25 (MSB)",
+    "26 (MSB)",
+    "27 (MSB)",
+    "28 (MSB)",
+    "29 (MSB)",
+    "30 (MSB)",
+    "31 (MSB)",
     "Bank Select (LSB)",
     "Modulation (LSB)",
     "Breath Control (LSB)",
@@ -215,26 +231,53 @@ defmodule Blister.Consts do
     "41 (LSB)",
     "Pan (LSB)",
     "Expression Control (LSB)",
-    "44 (LSB)", "45 (LSB)", "46 (LSB)", "47 (LSB)",
+    "44 (LSB)",
+    "45 (LSB)",
+    "46 (LSB)",
+    "47 (LSB)",
     "General Controller 1 (LSB)",
     "General Controller 2 (LSB)",
     "General Controller 3 (LSB)",
     "General Controller 4 (LSB)",
-    "52 (LSB)", "53 (LSB)", "54 (LSB)", "55 (LSB)", "56 (LSB)", "57 (LSB)",
-    "58 (LSB)", "59 (LSB)", "60 (LSB)", "61 (LSB)", "62 (LSB)", "63 (LSB)",
-
+    "52 (LSB)",
+    "53 (LSB)",
+    "54 (LSB)",
+    "55 (LSB)",
+    "56 (LSB)",
+    "57 (LSB)",
+    "58 (LSB)",
+    "59 (LSB)",
+    "60 (LSB)",
+    "61 (LSB)",
+    "62 (LSB)",
+    "63 (LSB)",
     "Sustain Pedal",
     "Portamento",
     "Sostenuto",
     "Soft Pedal",
     "68",
     "Hold 2",
-    "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+    "70",
+    "71",
+    "72",
+    "73",
+    "74",
+    "75",
+    "76",
+    "77",
+    "78",
+    "79",
     "General Controller 5",
     "Tempo Change",
     "General Controller 7",
     "General Controller 8",
-    "84", "85", "86", "87", "88", "89", "90",
+    "84",
+    "85",
+    "86",
+    "87",
+    "88",
+    "89",
+    "90",
     "External Effects Depth",
     "Tremolo Depth",
     "Chorus Depth",
@@ -246,9 +289,25 @@ defmodule Blister.Consts do
     "Non-Registered Param MSB",
     "Registered Param LSB",
     "Registered Param MSB",
-    "102", "103", "104", "105", "106", "107", "108", "109",
-    "110", "111", "112", "113", "114", "115", "116", "117",
-    "118", "119", "120",
+    "102",
+    "103",
+    "104",
+    "105",
+    "106",
+    "107",
+    "108",
+    "109",
+    "110",
+    "111",
+    "112",
+    "113",
+    "114",
+    "115",
+    "116",
+    "117",
+    "118",
+    "119",
+    "120",
     "Reset All Controllers",
     "Local Control",
     "All Notes Off",
@@ -343,7 +402,8 @@ defmodule Blister.Consts do
     "SynthBrass 2",
 
     # Reeds
-    "Soprano Sax",              # 64
+    # 64
+    "Soprano Sax",
     "Alto Sax",
     "Tenor Sax",
     "Baritone Sax",
@@ -431,53 +491,100 @@ defmodule Blister.Consts do
 
   # General MIDI drum channel note names.
   @gm_drum_note_names [
-    "Acoustic Bass Drum",       # 35, C
-    "Bass Drum 1",              # 36, C#
-    "Side Stick",               # 37, D
-    "Acoustic Snare",           # 38, D#
-    "Hand Clap",                # 39, E
-    "Electric Snare",           # 40, F
-    "Low Floor Tom",            # 41, F#
-    "Closed Hi Hat",            # 42, G
-    "High Floor Tom",           # 43, G#
-    "Pedal Hi-Hat",             # 44, A
-    "Low Tom",                  # 45, A#
-    "Open Hi-Hat",              # 46, B
-    "Low-Mid Tom",              # 47, C
-    "Hi Mid Tom",               # 48, C#
-    "Crash Cymbal 1",           # 49, D
-    "High Tom",                 # 50, D#
-    "Ride Cymbal 1",            # 51, E
-    "Chinese Cymbal",           # 52, F
-    "Ride Bell",                # 53, F#
-    "Tambourine",               # 54, G
-    "Splash Cymbal",            # 55, G#
-    "Cowbell",                  # 56, A
-    "Crash Cymbal 2",           # 57, A#
-    "Vibraslap",                # 58, B
-    "Ride Cymbal 2",            # 59, C
-    "Hi Bongo",                 # 60, C#
-    "Low Bongo",                # 61, D
-    "Mute Hi Conga",            # 62, D#
-    "Open Hi Conga",            # 63, E
-    "Low Conga",                # 64, F
-    "High Timbale",             # 65, F#
-    "Low Timbale",              # 66, G
-    "High Agogo",               # 67, G#
-    "Low Agogo",                # 68, A
-    "Cabasa",                   # 69, A#
-    "Maracas",                  # 70, B
-    "Short Whistle",            # 71, C
-    "Long Whistle",             # 72, C#
-    "Short Guiro",              # 73, D
-    "Long Guiro",               # 74, D#
-    "Claves",                   # 75, E
-    "Hi Wood Block",            # 76, F
-    "Low Wood Block",           # 77, F#
-    "Mute Cuica",               # 78, G
-    "Open Cuica",               # 79, G#
-    "Mute Triangle",            # 80, A
-    "Open Triangle"             # 81, A#
+    # 35, C
+    "Acoustic Bass Drum",
+    # 36, C#
+    "Bass Drum 1",
+    # 37, D
+    "Side Stick",
+    # 38, D#
+    "Acoustic Snare",
+    # 39, E
+    "Hand Clap",
+    # 40, F
+    "Electric Snare",
+    # 41, F#
+    "Low Floor Tom",
+    # 42, G
+    "Closed Hi Hat",
+    # 43, G#
+    "High Floor Tom",
+    # 44, A
+    "Pedal Hi-Hat",
+    # 45, A#
+    "Low Tom",
+    # 46, B
+    "Open Hi-Hat",
+    # 47, C
+    "Low-Mid Tom",
+    # 48, C#
+    "Hi Mid Tom",
+    # 49, D
+    "Crash Cymbal 1",
+    # 50, D#
+    "High Tom",
+    # 51, E
+    "Ride Cymbal 1",
+    # 52, F
+    "Chinese Cymbal",
+    # 53, F#
+    "Ride Bell",
+    # 54, G
+    "Tambourine",
+    # 55, G#
+    "Splash Cymbal",
+    # 56, A
+    "Cowbell",
+    # 57, A#
+    "Crash Cymbal 2",
+    # 58, B
+    "Vibraslap",
+    # 59, C
+    "Ride Cymbal 2",
+    # 60, C#
+    "Hi Bongo",
+    # 61, D
+    "Low Bongo",
+    # 62, D#
+    "Mute Hi Conga",
+    # 63, E
+    "Open Hi Conga",
+    # 64, F
+    "Low Conga",
+    # 65, F#
+    "High Timbale",
+    # 66, G
+    "Low Timbale",
+    # 67, G#
+    "High Agogo",
+    # 68, A
+    "Low Agogo",
+    # 69, A#
+    "Cabasa",
+    # 70, B
+    "Maracas",
+    # 71, C
+    "Short Whistle",
+    # 72, C#
+    "Long Whistle",
+    # 73, D
+    "Short Guiro",
+    # 74, D#
+    "Long Guiro",
+    # 75, E
+    "Claves",
+    # 76, F
+    "Hi Wood Block",
+    # 77, F#
+    "Low Wood Block",
+    # 78, G
+    "Mute Cuica",
+    # 79, G#
+    "Open Cuica",
+    # 80, A
+    "Mute Triangle",
+    # 81, A#
+    "Open Triangle"
   ]
 
   def gm_drum_note_names, do: @gm_drum_note_names

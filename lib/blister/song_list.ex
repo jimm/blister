@@ -4,7 +4,7 @@ defmodule Blister.SongList do
   """
 
   defstruct name: "Unnamed",
-    songs: []
+            songs: []
 
   @doc """
   Return the first song that matches `name_regex_str`.
@@ -20,7 +20,7 @@ defmodule Blister.SongList do
   Return a new `SongList` with the list of songs sorted by name.
   """
   def sort_by_name(%__MODULE__{songs: songs} = list) do
-    %{list | songs: songs |> Enum.sort_by(&(&1.name))}
+    %{list | songs: songs |> Enum.sort_by(& &1.name)}
   end
 
   @doc """

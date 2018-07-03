@@ -12,10 +12,13 @@ defmodule Blister.MIDI.Input do
   def start_link(driver, name) do
     {:ok, in_pid} = driver.open(:input, name)
     listener = spawn_link(__MODULE__, :loop, [{nil, nil}])
-    state = %State{io: %Blister.MIDI.IO{driver: driver, port_pid: in_pid,
-                                        port_name: name},
-                   connections: [],
-                   listener: listener}
+
+    state = %State{
+      io: %Blister.MIDI.IO{driver: driver, port_pid: in_pid, port_name: name},
+      connections: [],
+      listener: listener
+    }
+
     {:ok, pid} = GenServer.start_link(__MODULE__, state)
     send(listener, {:set_state, {in_pid, pid}})
     :ok = driver.listen(in_pid, listener)
@@ -38,7 +41,7 @@ defmodule Blister.MIDI.Input do
   # ================ GenServer ================
 
   def handle_call({:add_connection, conn}, _from, state) do
-    {:reply, :ok, %{state | connections: [conn|state.connections]}}
+    {:reply, :ok, %{state | connections: [conn | state.connections]}}
   end
 
   def handle_call({:remove_connection, conn}, _from, state) do
@@ -48,9 +51,10 @@ defmodule Blister.MIDI.Input do
   def handle_call({:messages, []}, _from, state) do
     {:reply, :ok, state}
   end
+
   def handle_call({:messages, messages}, _from, state) when is_list(messages) do
     messages = messages |> Enum.map(&remove_timestamp/1)
-    state.connections |> Enum.map(&(Blister.Connection.midi_in(&1, messages)))
+    state.connections |> Enum.map(&Blister.Connection.midi_in(&1, messages))
     {:reply, :ok, state}
   end
 
@@ -72,8 +76,10 @@ defmodule Blister.MIDI.Input do
       {^portmidi_input_pid, messages} ->
         receive_messages(app_input_pid, messages)
         loop(state)
+
       {:set_state, state} ->
         loop(state)
+
       :stop ->
         :ok
     end

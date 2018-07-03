@@ -3,13 +3,12 @@ defmodule Blister do
   require Logger
 
   def start(_type, _args) do
-    {parsed, args, invalid} = parse_options
-
-    OptionParser.parse(
-      System.argv(),
-      switches: [list: :boolean, text: :boolean, cmds: :string, help: :boolean],
-      aliases: [l: :list, t: :text, c: :cmds, h: :help]
-    )
+    {parsed, args, invalid} =
+      OptionParser.parse(
+        System.argv(),
+        switches: [list: :boolean, text: :boolean, cmds: :string, help: :boolean],
+        aliases: [l: :list, t: :text, c: :cmds, h: :help]
+      )
 
     load_file =
       case args do

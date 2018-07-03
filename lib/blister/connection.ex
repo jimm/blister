@@ -12,8 +12,8 @@ defmodule Blister.Connection do
     defstruct [:sym, :pid, :chan]
   end
 
-  defstruct [:input, :output,   # ConnIO structs
-             :filter, :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
+  # ConnIO structs
+  defstruct [:input, :output, :filter, :zone, :xpose, :bank_msb, :bank_lsb, :pc_prog]
 
   use Bitwise
   alias Blister.MIDI.{Input, Output}
@@ -27,21 +27,28 @@ defmodule Blister.Connection do
   def start(conn, start_messages \\ []) do
     Input.add_connection(conn.input.pid, conn)
     messages = start_messages
-    messages = if conn.pc_prog do
-      [{C.program_change + conn.output.chan, conn.pc_prog, 0} | messages]
-    else
-      messages
-    end
-    messages = if conn.bank_lsb do
-      [{C.controller(conn.output.chan), C.cc_bank_select_lsb, conn.bank_lsb} | messages]
-    else
-      messages
-    end
-    messages = if conn.bank_msb do
-      [{C.controller(conn.output.chan), C.cc_bank_select_msb, conn.bank_msb} | messages]
-    else
-      messages
-    end
+
+    messages =
+      if conn.pc_prog do
+        [{C.program_change() + conn.output.chan, conn.pc_prog, 0} | messages]
+      else
+        messages
+      end
+
+    messages =
+      if conn.bank_lsb do
+        [{C.controller(conn.output.chan), C.cc_bank_select_lsb(), conn.bank_lsb} | messages]
+      else
+        messages
+      end
+
+    messages =
+      if conn.bank_msb do
+        [{C.controller(conn.output.chan), C.cc_bank_select_msb(), conn.bank_msb} | messages]
+      else
+        messages
+      end
+
     midi_out(conn, messages)
   end
 
@@ -61,8 +68,9 @@ defmodule Blister.Connection do
   def midi_in(conn, message) when is_tuple(message) do
     midi_in(conn, [message])
   end
+
   def midi_in(conn, messages) when is_list(messages) do
-    midi_out(conn, process(conn, messages) |> Enum.to_list)
+    midi_out(conn, process(conn, messages) |> Enum.to_list())
   end
 
   @doc """
@@ -81,17 +89,24 @@ defmodule Blister.Connection do
   def midi_out(_, nil), do: nil
   def midi_out(_, []), do: nil
   def midi_out(%__MODULE__{output: %ConnIO{pid: nil}}, _), do: nil
+
   def midi_out(%__MODULE__{output: %ConnIO{pid: pid}}, messages) do
     Output.write(pid, messages)
   end
 
   defp accept_from_input?(conn, message) do
     cond do
-      conn.input.chan == nil -> true
-      !P.channel?(message) -> true
+      conn.input.chan == nil ->
+        true
+
+      !P.channel?(message) ->
+        true
+
       P.note?({_, note, _} = message) ->
         P.channel(message) == conn.input.chan && inside_zone?(conn, note)
-      true -> true
+
+      true ->
+        true
     end
   end
 
@@ -106,17 +121,21 @@ defmodule Blister.Connection do
   #
   # First transpose is applied, then filter function
   defp munge(conn, message) do
-    msg = cond do
-      P.note?(message) ->
-        # note off, note on, poly pressure
-        munge_note(conn, message)
-      P.channel?(message) ->
-        # controller, program change, channel pressure, pitch bend
-        munge_chan_message(conn, message)
-      true ->
-        # system messages
-        message
-    end
+    msg =
+      cond do
+        P.note?(message) ->
+          # note off, note on, poly pressure
+          munge_note(conn, message)
+
+        P.channel?(message) ->
+          # controller, program change, channel pressure, pitch bend
+          munge_chan_message(conn, message)
+
+        true ->
+          # system messages
+          message
+      end
+
     if conn.filter do
       conn.filter.(conn, msg)
     else
@@ -132,7 +151,7 @@ defmodule Blister.Connection do
   defp xpose(xpose, note), do: min(127, max(0, note + xpose))
 
   defp munge_chan_message(conn, {status, b1, b2}) do
-    status = (status &&& 0xf0) + conn.output.chan
+    status = (status &&& 0xF0) + conn.output.chan
     {status, b1, b2}
   end
 end

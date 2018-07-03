@@ -12,9 +12,10 @@ defmodule Blister.MIDI.Output do
 
   def start_link(driver, name) do
     {:ok, out_pid} = driver.open(:output, name)
-    GenServer.start_link(__MODULE__,
-      %State{io: %Blister.MIDI.IO{driver: driver, port_pid: out_pid,
-                                  port_name: name}})
+
+    GenServer.start_link(__MODULE__, %State{
+      io: %Blister.MIDI.IO{driver: driver, port_pid: out_pid, port_name: name}
+    })
   end
 
   def write(pid, messages), do: GenServer.cast(pid, {:write, messages})
@@ -25,6 +26,7 @@ defmodule Blister.MIDI.Output do
     state.io.driver.write(state.io.port_pid, Enum.map(messages, &add_timestamp/1))
     {:noreply, state}
   end
+
   def handle_cast({:write, message}, state) do
     state.io.driver.write(state.io.port_pid, [add_timestamp(message)])
     {:noreply, state}

@@ -13,16 +13,16 @@ defmodule Blister.Predicates do
   Returns true if message or status is a channel (non-system) message or
   status.
   """
-  def channel?({b, _, _}) when b >= 0x80 and b < 0xf0, do: true
-  def channel?(b) when is_integer(b) and b >= 0x80 and b < 0xf0, do: true
+  def channel?({b, _, _}) when b >= 0x80 and b < 0xF0, do: true
+  def channel?(b) when is_integer(b) and b >= 0x80 and b < 0xF0, do: true
   def channel?(_), do: false
 
   @doc """
   Returns true if message or status byte is a note (note on, note off, poly
   pressure).
   """
-  def note?({b, _, _}) when b >= 0x80 and b < 0xb0, do: true
-  def note?(b) when is_integer(b) and  b >= 0x80 and b < 0xb0, do: true
+  def note?({b, _, _}) when b >= 0x80 and b < 0xB0, do: true
+  def note?(b) when is_integer(b) and b >= 0x80 and b < 0xB0, do: true
   def note?(_), do: false
 
   @doc """
@@ -35,22 +35,22 @@ defmodule Blister.Predicates do
   @doc """
   Returns true if message or status byte is a note on.
   """
-  def note_on?({b, _, _}) when b >= 0x90 and b < 0xa0, do: true
-  def note_on?(b) when is_integer(b) and  b >= 0x90 and b < 0xa0, do: true
+  def note_on?({b, _, _}) when b >= 0x90 and b < 0xA0, do: true
+  def note_on?(b) when is_integer(b) and b >= 0x90 and b < 0xA0, do: true
   def note_on?(_), do: false
 
   @doc """
   Returns true if message or status byte is a controller.
   """
-  def controller?({b, _, _}) when b >= 0xb0 and b < 0xc0, do: true
-  def controller?(b) when is_integer(b) and b >= 0xb0 and b < 0xc0, do: true
+  def controller?({b, _, _}) when b >= 0xB0 and b < 0xC0, do: true
+  def controller?(b) when is_integer(b) and b >= 0xB0 and b < 0xC0, do: true
   def controller?(_), do: false
 
   @doc """
   Returns true if message or status byte is a program change.
   """
-  def pc?({b, _, _}) when b >= 0xc0 and b < 0xd0, do: true
-  def pc?(b) when is_integer(b) and b >= 0xc0 and b < 0xd0, do: true
+  def pc?({b, _, _}) when b >= 0xC0 and b < 0xD0, do: true
+  def pc?(b) when is_integer(b) and b >= 0xC0 and b < 0xD0, do: true
   def pc?(_), do: false
 
   @doc """
@@ -60,6 +60,8 @@ defmodule Blister.Predicates do
   iex> Blister.Predicates.channel({0x94, 0, 0})
   4
   """
-  def channel({status, _, _}) when status >= 0x80 and status < 0xf0, do: status &&& 0x0f
-  def channel(status) when is_integer(status) and status >= 0x80 and status < 0xf0, do: status &&& 0x0f
+  def channel({status, _, _}) when status >= 0x80 and status < 0xF0, do: status &&& 0x0F
+
+  def channel(status) when is_integer(status) and status >= 0x80 and status < 0xF0,
+    do: status &&& 0x0F
 end

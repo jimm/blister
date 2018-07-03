@@ -10,7 +10,7 @@ defmodule Blister.MIDI.IO do
   defstruct [:driver, :port_pid, :port_name]
 
   @callback port_pid(pid) :: pid
-  @callback port_name(pid) :: String.t
+  @callback port_name(pid) :: String.t()
   @callback stop(pid) :: term
 
   @doc false

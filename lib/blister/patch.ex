@@ -2,10 +2,10 @@ defmodule Blister.Patch do
   use GenServer
 
   defstruct name: "Unnamed",
-    connections: [],
-    start_messages: [],
-    stop_messages: [],
-    running: false
+            connections: [],
+            start_messages: [],
+            stop_messages: [],
+            running: false
 
   # ================ API ================
 
@@ -36,6 +36,7 @@ defmodule Blister.Patch do
   def start(nil) do
     :ok
   end
+
   def start(pid) do
     GenServer.call(pid, :start)
   end
@@ -43,6 +44,7 @@ defmodule Blister.Patch do
   def stop(nil) do
     :ok
   end
+
   def stop(pid) do
     GenServer.call(pid, :stop)
   end
@@ -52,7 +54,7 @@ defmodule Blister.Patch do
   alias Blister.Connection
 
   def handle_call(:inputs, _from, patch) do
-    inputs = patch.connections |> Enum.map(&(&1.input)) |> Enum.uniq
+    inputs = patch.connections |> Enum.map(& &1.input) |> Enum.uniq()
     {:reply, inputs, patch}
   end
 
@@ -76,6 +78,7 @@ defmodule Blister.Patch do
     # already running
     {:reply, :ok, patch}
   end
+
   def handle_call(:start, _from, patch) do
     patch.connections |> Enum.map(&Connection.start(&1, patch.start_messages))
     {:reply, :ok, %{patch | running: true}}
@@ -85,6 +88,7 @@ defmodule Blister.Patch do
     # already stopped
     {:reply, :ok, patch}
   end
+
   def handle_call(:stop, _from, patch) do
     patch.connections |> Enum.map(&Connection.stop(&1, patch.stop_messages))
     {:reply, :ok, %{patch | running: false}}

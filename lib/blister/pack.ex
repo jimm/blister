@@ -7,68 +7,79 @@ defmodule Blister.Pack do
   require Logger
   alias Blister.{Cursor, SongList, DSL}
 
-  defstruct inputs: %{},        # symbol => {display name, input pid}
-    outputs: %{},               # symbol => {display name, output pid}
-    all_songs: %SongList{name: "All Songs"},
-    song_lists: [],
-    messages: %{},              # name => bytes
-    message_bindings: %{},
-    triggers: %{},              # symbol => [{bytes, func}, ...]
-    code_bindings: %{},
-    loaded_file: nil,
-    cursor: %Cursor{}
+  # symbol => {display name, input pid}
+  defstruct inputs: %{},
+            # symbol => {display name, output pid}
+            outputs: %{},
+            all_songs: %SongList{name: "All Songs"},
+            song_lists: [],
+            # name => bytes
+            messages: %{},
+            message_bindings: %{},
+            # symbol => [{bytes, func}, ...]
+            triggers: %{},
+            code_bindings: %{},
+            loaded_file: nil,
+            cursor: %Cursor{}
 
   def start_link do
     Logger.info("pack init")
+
     Agent.start_link(
       fn ->
         pack = %__MODULE__{}
         %{pack | cursor: pack.cursor |> Cursor.init(pack)}
       end,
-      name: __MODULE__)
+      name: __MODULE__
+    )
   end
 
-  def inputs,           do: Agent.get(__MODULE__, fn pack -> pack.inputs end)
-  def outputs,          do: Agent.get(__MODULE__, fn pack -> pack.outputs end)
-  def all_songs,        do: Agent.get(__MODULE__, fn pack -> pack.all_songs end)
-  def song_lists,       do: Agent.get(__MODULE__, fn pack -> pack.song_lists end)
-  def messages,         do: Agent.get(__MODULE__, fn pack -> pack.messages end)
+  def inputs, do: Agent.get(__MODULE__, fn pack -> pack.inputs end)
+  def outputs, do: Agent.get(__MODULE__, fn pack -> pack.outputs end)
+  def all_songs, do: Agent.get(__MODULE__, fn pack -> pack.all_songs end)
+  def song_lists, do: Agent.get(__MODULE__, fn pack -> pack.song_lists end)
+  def messages, do: Agent.get(__MODULE__, fn pack -> pack.messages end)
   def message_bindings, do: Agent.get(__MODULE__, fn pack -> pack.message_bindings end)
-  def code_bindings,    do: Agent.get(__MODULE__, fn pack -> pack.code_bindings end)
-  def loaded_file,      do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
-  def cursor,           do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
+  def code_bindings, do: Agent.get(__MODULE__, fn pack -> pack.code_bindings end)
+  def loaded_file, do: Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
+  def cursor, do: Agent.get(__MODULE__, fn pack -> pack.cursor end)
 
   def song_list, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song_list end)
-  def song,      do: Agent.get(__MODULE__, fn pack -> pack.cursor.song end)
+  def song, do: Agent.get(__MODULE__, fn pack -> pack.cursor.song end)
   def patch_pid, do: Agent.get(__MODULE__, fn pack -> pack.cursor.patch_pid end)
 
-  def triggers,  do: Agent.get(__MODULE__, fn pack -> pack.triggers end)
+  def triggers, do: Agent.get(__MODULE__, fn pack -> pack.triggers end)
 
   def next_patch do
     Agent.update(__MODULE__, fn pack ->
       %{pack | cursor: pack.cursor |> Cursor.next_patch(pack)}
     end)
   end
+
   def prev_patch do
     Agent.update(__MODULE__, fn pack ->
       %{pack | cursor: pack.cursor |> Cursor.prev_patch(pack)}
     end)
   end
+
   def next_song do
     Agent.update(__MODULE__, fn pack ->
       %{pack | cursor: pack.cursor |> Cursor.next_song(pack)}
     end)
   end
+
   def prev_song do
     Agent.update(__MODULE__, fn pack ->
       %{pack | cursor: pack.cursor |> Cursor.prev_song(pack)}
     end)
   end
+
   def next_song_list do
     Agent.update(__MODULE__, fn pack ->
       %{pack | cursor: pack.cursor |> Cursor.next_song_list(pack)}
     end)
   end
+
   def prev_song_list do
     Agent.update(__MODULE__, fn pack ->
       %{pack | cursor: pack.cursor |> Cursor.prev_song_list(pack)}
@@ -76,9 +87,11 @@ defmodule Blister.Pack do
   end
 
   def add_song(song) do
-    list = all_songs()
+    list =
+      all_songs()
       |> SongList.add_song(song)
-      |> SongList.sort_by_name
+      |> SongList.sort_by_name()
+
     # TODO update cursor if necessary
     Agent.update(__MODULE__, fn pack -> %{pack | all_songs: list} end)
   end
@@ -90,9 +103,11 @@ defmodule Blister.Pack do
   def load(file) do
     Logger.debug("load file #{file}")
     result = DSL.load(file)
+
     case result do
       {:error, _} ->
         result
+
       new_pack ->
         Agent.update(__MODULE__, fn _ ->
           cursor = new_pack.cursor |> Blister.Cursor.init(new_pack)
@@ -108,6 +123,7 @@ defmodule Blister.Pack do
 
   def reload do
     file = Agent.get(__MODULE__, fn pack -> pack.loaded_file end)
+
     if file != nil do
       load(file)
     end

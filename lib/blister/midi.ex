@@ -12,9 +12,13 @@ defmodule Blister.MIDI do
     # Some devices have spaces at the end of their names. I'm looking at
     # you, M-Audio MIDISPORT 4x4.
     input_workers =
-      devices.input  |> Enum.map(&(worker(Input, [driver_module, String.trim(&1.name)], id: make_ref())))
+      devices.input
+      |> Enum.map(&worker(Input, [driver_module, String.trim(&1.name)], id: make_ref()))
+
     output_workers =
-      devices.output |> Enum.map(&(worker(Output, [driver_module, String.trim(&1.name)], id: make_ref())))
+      devices.output
+      |> Enum.map(&worker(Output, [driver_module, String.trim(&1.name)], id: make_ref()))
+
     children = input_workers ++ output_workers
 
     {:ok, sup} = Supervisor.start_link(children, strategy: :one_for_one)
@@ -86,16 +90,18 @@ defmodule Blister.MIDI do
   end
 
   def handle_call({:panic, spam_every_note}, _from, state) do
-    messages = if spam_every_note do
-      individual_notes_off()
-    else
-      all_notes_off()
-    end
+    messages =
+      if spam_every_note do
+        individual_notes_off()
+      else
+        all_notes_off()
+      end
 
     child_pids(state.sup, Output)
     |> Enum.map(fn pid ->
       Output.write(pid, messages)
     end)
+
     {:reply, :ok, state}
   end
 
@@ -112,7 +118,7 @@ defmodule Blister.MIDI do
 
   def terminate(reason, _state) do
     Logger.info("midi terminate")
-    if reason != :shutdown, do: Logger.info("midi reason #{inspect reason}")
+    if reason != :shutdown, do: Logger.info("midi reason #{inspect(reason)}")
   end
 
   # ================ Helpers ================
@@ -134,22 +140,25 @@ defmodule Blister.MIDI do
         module == mod && mod.port_name(pid) == name
       end)
       |> Enum.map(fn {_id, pid, _type, _modules} -> pid end)
+
     case pids do
-      [h|_] -> h
+      [h | _] -> h
       _ -> nil
     end
   end
 
   defp individual_notes_off do
-    C.midi_channels |> Enum.map(fn chan ->
-      C.all_notes |> Enum.map(fn note -> {C.note_off(chan), note, 64} end)
+    C.midi_channels()
+    |> Enum.map(fn chan ->
+      C.all_notes() |> Enum.map(fn note -> {C.note_off(chan), note, 64} end)
     end)
-    |> List.flatten
+    |> List.flatten()
   end
 
   def all_notes_off do
-    C.midi_channels |> Enum.map(fn chan ->
-      {C.controller(chan), C.cm_all_notes_off, 0}
+    C.midi_channels()
+    |> Enum.map(fn chan ->
+      {C.controller(chan), C.cm_all_notes_off(), 0}
     end)
   end
 end
