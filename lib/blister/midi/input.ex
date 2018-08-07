@@ -25,6 +25,10 @@ defmodule Blister.MIDI.Input do
     {:ok, pid}
   end
 
+  def init(args) do
+    {:ok, args}
+  end
+
   def add_connection(pid, connection) do
     GenServer.call(pid, {:add_connection, connection})
   end
