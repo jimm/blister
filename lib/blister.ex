@@ -64,13 +64,15 @@ defmodule Blister do
 
   defp list(driver_module) do
     %{input: inputs, output: outputs} = driver_module.devices
-    f = fn d -> IO.puts("  #{d.name}") end
-    IO.puts("Inputs:")
-    inputs |> Enum.map(f)
-    IO.puts("Outputs:")
-    outputs |> Enum.map(f)
+    list_type("Inputs", inputs)
+    list_type("Outputs", outputs)
     :init.stop()
     {:ok, self()}
+  end
+
+  defp list_type(str, devices) do
+    IO.puts("#{str}:")
+    devices |> Enum.map(fn d -> IO.puts("  #{d.name}") end)
   end
 
   defp usage([]) do
