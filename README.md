@@ -19,18 +19,11 @@ Blister is a rewrite of [PatchMaster](http://patchmaster.org/) in Elixir.
 ## Installation
 
 Blister requires [PortMidi](http://portmedia.sourceforge.net/portmidi/).
-I use MacPorts. Here's how I compiled and installed PortMidi:
+If you use `brew`, installation is easy:
 
 ```sh
-sudo port install portmidi
-sudo ln -s /opt/local/include/portmidi.h /usr/local/include
-sudo ln -s /opt/local/lib/libportmidi.dylib /usr/local/lib
-sudo ln -s /opt/local/lib/libportmidi_s.a /usr/local/lib
+brew install portmidi
 ```
-
-You can try setting the `CPATH`, `LIBRARY_PATH`, and `LD_LIBRARY_PATH`
-environment variables to point to the MacPorts files in /opt/local instead
-of creating soft links, but I had better luck doing the latter.
 
 ## Running
 
